@@ -1,4 +1,18 @@
-//#include "includes.h"
+#include "includes.h"
+
+BOOL ping(int argc, wchar_t** argv);
+
+BOOL trace(int argc, wchar_t** argv[]);
+
+BOOL arp_search(int argc, wchar_t** argv[]);
+
+BOOL nslookup(int argc, wchar_t** argv[]);
+
+BOOL IPconfig(int argc, wchar_t** argv[]);
+
+
+
+
 //
 //typedef struct {
 //	char* dest;
