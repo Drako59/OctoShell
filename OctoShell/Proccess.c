@@ -5,7 +5,7 @@ typedef STARTUPINFOW STARTUPINFO;
 
 
 
-BOOL CloseProcces(int argc,wchar_t* argv[]);
+BOOL TerminateProcces(int argc,wchar_t* argv[]);
 
 //C:\Users\ayele\source\repos\OctoShell\x64\Debug
 

@@ -15,13 +15,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OctoShell.cpp">
+    <ClCompile Include="OctoShell.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="networks_func.cpp">
+    <ClCompile Include="networks_func.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Proccess.cpp">
+    <ClCompile Include="Proccess.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Linux_functions_files.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HelpFunctions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectoryFunc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -33,6 +42,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Proccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinuxFuncs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectoryFunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

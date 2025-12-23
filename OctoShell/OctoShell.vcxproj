@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -123,12 +123,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="networks_func.cpp" />
-    <ClCompile Include="OctoShell.cpp" />
-    <ClCompile Include="Proccess.cpp" />
+    <ClCompile Include="DirectoryFunc.c" />
+    <ClCompile Include="HelpFunctions.c" />
+    <ClCompile Include="Linux_functions_files.c" />
+    <ClCompile Include="networks_func.c" />
+    <ClCompile Include="OctoShell.c" />
+    <ClCompile Include="Proccess.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DirectoryFunc.h" />
     <ClInclude Include="includes.h" />
+    <ClInclude Include="LinuxFuncs.h" />
     <ClInclude Include="Networks_funcs.h" />
     <ClInclude Include="Proccess.h" />
   </ItemGroup>
