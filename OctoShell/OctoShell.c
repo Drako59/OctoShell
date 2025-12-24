@@ -11,24 +11,29 @@
 //
 //} DirectoryNode;
 
+typedef struct Command {
+	wchar_t* name;
+	int argc;
+	wchar_t* argv[COMMAND_MAX_SIZE];
+	HANDLE write_into;
+	struct Command* next;
+} Command;
 
-
-BOOL freePathNode(DirectoryNode* pointer) {
+void freePathNode(DirectoryNode* pointer) {
 	DirectoryNode* before_node;
 	//printf("Here");
 
 	int first = 1;
-	while ((path_pointer)) {
-		printf("HERE");
+	while ((pointer != NULL)) {
 		before_node = pointer;
 		pointer = pointer->next;
-		if (!first)
-		{
-			free(before_node->name);
-			first = 0;
-		}
+		wprintf(L"Node Name->%s \n", before_node->name);
+		free(before_node->name);
 		free(before_node);
 	}
+
+
+	
 }
 
 int size_of_pathW(DirectoryNode* start) 
@@ -63,24 +68,80 @@ wchar_t* CreatePath(DirectoryNode* start ) {
 }
 
 
+
+Command* SepIntoCommand(wchar_t* command_str, Command* command) {
+	wchar_t* ptr = NULL;
+	wchar_t* cmd;
+	int argc = 0;
+
+	wchar_t* sep = L" ";
+	wchar_t* tok;
+	//seperate into tokens and 
+	tok = wcstok(command_str, sep, &ptr);
+	if (!tok) return NULL;
+	cmd = tok;
+	command->name = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 1));
+	wcscpy(command->name, cmd);
+	//wprintf(L"commandName->%s", command.name); //DEBUG
+	tok = wcstok(NULL, sep, &ptr);
+
+	//create a command obj
+	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
+		command->argv[argc] = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 2));
+		//wprintf(L"argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command.argv[argc]); //DEBUG
+		wcscpy(command->argv[argc], tok);
+		argc++;
+		tok = wcstok(NULL, sep, &ptr);
+
+	}
+
+	command->argc = argc;
+	command->next = NULL;
+
+
+}
+
+
+void FreeCommand(Command* cmd_pointer) {
+	while (cmd_pointer != NULL) {
+		free(cmd_pointer->name);
+		for (int i = 0; i < cmd_pointer->argc; i++) {
+			free(cmd_pointer->argv[i]);
+		}
+		cmd_pointer = cmd_pointer->next;
+	}
+}
+
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
+
+BOOL(*func_arr[])(int, char**) = {cd};
+
+
+wchar_t* funcs_name[] = {L"cd"};
 
 DirectoryNode* start_path;  
 
 DirectoryNode* path_pointer;
 DirectoryNode* before;
-wchar_t command[COMMAND_MAX_SIZE];
+wchar_t command_str[COMMAND_MAX_SIZE];
 
 wchar_t* path;
 //--------------------------------------------------------------------------------------------------------------------------------------
 
 int main()
 {
+	BOOL func_match_flag = FALSE;
 	//print_matrix(argv, argc);
+	
+	Command command;
+	Command* cmd_pointer;
+	cmd_pointer = &command;
+	//wchar_t** argv;
 	int len;
 	start_path = (DirectoryNode*)malloc(sizeof(DirectoryNode));
-	start_path->name = L"C:";
+	start_path->name = (wchar_t*)malloc(sizeof(wchar_t) * 3);
+	wcscpy(start_path->name,  L"C:");
 	start_path->next = NULL;
 	path_pointer = start_path;
 
@@ -92,26 +153,70 @@ int main()
 
 	wprintf(L"<%s>", path);
 
-	while (fgetws(command, COMMAND_MAX_SIZE - 1, stdin)) {
+	while (fgetws(command_str, COMMAND_MAX_SIZE - 1, stdin)) {
+		
+		
+		func_match_flag = FALSE;
+		
+		len = wcslen(command_str);
+		if (len > 0 && command_str[len - 1] == L'\n')
+			command_str[len - 1] = L'\0';
 
-
-		len = wcslen(command);
-		if (len > 0 && command[len - 1] == L'\n')
-			command[len - 1] = L'\0';
-
-
-		wprintf(L"Command: %s\n", command);
-		if (wcscmp(command, L"Exit()") == 0)
+		//Remove the additional char fromthe command
+		if (wcscmp(command_str, L"Exit()") == 0)
 			break;
 
-		wchar_t* argv[COMMAND_MAX_SIZE];
+		////seperate into tokens and 
+		//tok = wcstok(command_str, sep, &ptr);
+		//if (!tok) continue;
+		//cmd = tok;
+		//command.name = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 1));
+		//wcscpy(command.name, cmd);
+		////wprintf(L"commandName->%s", command.name); //DEBUG
+		//tok = wcstok(NULL, sep, &ptr);
+		//
+		////create a command obj
+		//while (tok != NULL && command.argc < COMMAND_MAX_SIZE) {
+		//	command.argv[argc] = (wchar_t*)malloc(sizeof(wchar_t) *( wcslen(tok) + 2));
+		//	//wprintf(L"argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command.argv[argc]); //DEBUG
+		//	wcscpy(command.argv[argc], tok);
+		//	argc++;
+		//	tok = wcstok(NULL, sep, &ptr);
+
+		//}
+
+		//command.argc = argc;
+
+		if (SepIntoCommand(command_str, &command) == NULL) {
+			continue;
+		}
+
+		//call the function according to the command
+		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
+			if (wcscmp(funcs_name, command.name)) {
+				func_arr[i](command.argc,command.argv);
+				func_match_flag = TRUE;
+				break;
+			}
+		}
+		//free the memory that the command structure used
+
+		FreeCommand(&command);
+
+
+		//wprintf(L"Command: %s\n", command);
+		
+
+		/*wchar_t* argv[COMMAND_MAX_SIZE];
 		
 		argv[0] = (wchar_t*)malloc(sizeof(wchar_t) * 40);
-		wcscpy(argv[0], L"C:\\noamprojects\\CTF");
+		wcscpy(argv[0], L"C:\\noamprojects");
 
 		cd(1, argv);
 		wcscpy(argv[0], L"noamprojects");
 		cd(1, argv);
+		wcscpy(argv[0], L"CTF");
+		cd(1, argv);*/
 
 		//path = createPath(start_path);
 		////wprintf(L"%d\n", size_of_pathW(start_path));			//DEBUG

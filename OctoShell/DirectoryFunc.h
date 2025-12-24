@@ -28,7 +28,7 @@ extern DirectoryNode* path_pointer;
 
 #endif // !NodeStruct
 
-BOOL freePathNode(DirectoryNode* path_pointer);
+void freePathNode(DirectoryNode* path_pointer);
 
 wchar_t* CreatePath(DirectoryNode* start);
 
