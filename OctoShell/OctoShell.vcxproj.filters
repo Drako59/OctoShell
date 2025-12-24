@@ -50,5 +50,8 @@
     <ClInclude Include="DirectoryFunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="basicImports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

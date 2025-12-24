@@ -131,6 +131,7 @@
     <ClCompile Include="Proccess.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="basicImports.h" />
     <ClInclude Include="DirectoryFunc.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="LinuxFuncs.h" />
