@@ -9,6 +9,8 @@ void print_matrix_wchar(wchar_t** matrix, int len) {
 	}
 }
 
+
+//has to fix the problex of set a new cd after one and th eproblems of duplicates paths
 BOOL cd(int argc, char** argv) {
 	
 	if (argc == 1) {
@@ -29,7 +31,7 @@ BOOL cd(int argc, char** argv) {
 		path = CreatePath(start_path);
 	}
 	else {
-		printf("Ivalid parameters");
+		printf("Ivalid parameters\n");
 		return 0;
 	}
 
@@ -60,9 +62,13 @@ BOOL change_dir_Node(wchar_t* path_to_change) {
 	if (wcscmp(token, L"C:") == 0) {
 		freePathNode(start_path);
 
-		wprintf(L"%s \n", token);
+		//wprintf(L"%s \n", token);
 
 		New_Node = (DirectoryNode*)malloc(sizeof(DirectoryNode));
+		if (New_Node == NULL) {
+			printf("Malloc allocation failed.\n");
+			exit(EXIT_FAILURE);
+		}
 		New_Node->name = token;
 		New_Node->next = NULL;
 		start_path = New_Node;
@@ -72,6 +78,10 @@ BOOL change_dir_Node(wchar_t* path_to_change) {
 
 		while (token != NULL) {
 			New_Node = (DirectoryNode*)malloc(sizeof(DirectoryNode));
+			if (New_Node == NULL) {
+				printf("Malloc allocation failed.\n");
+				exit(EXIT_FAILURE);
+			}
 			New_Node->next = NULL;
 			New_Node->name = token;
 			path_pointer->next = New_Node;
@@ -85,6 +95,12 @@ BOOL change_dir_Node(wchar_t* path_to_change) {
 		while (token != NULL)
 		{
 			New_Node = (DirectoryNode*)malloc(sizeof(DirectoryNode));
+
+			if (New_Node == NULL) {
+				printf("Malloc allocation failed.\n");
+				exit(EXIT_FAILURE);
+			}
+
 			New_Node->name = token;
 			New_Node->next = NULL;
 			//wprintf(L"%s \n", token);

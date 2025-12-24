@@ -83,7 +83,6 @@ Command* SepIntoCommand(wchar_t* command_str, Command* command) {
 	command->name = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 1));
 	wcscpy(command->name, cmd);
 	//wprintf(L"commandName->%s", command.name); //DEBUG
-	tok = wcstok(NULL, sep, &ptr);
 
 	//create a command obj
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
@@ -116,8 +115,6 @@ void FreeCommand(Command* cmd_pointer) {
 
 
 BOOL(*func_arr[])(int, char**) = {cd};
-
-
 wchar_t* funcs_name[] = {L"cd"};
 
 DirectoryNode* start_path;  
@@ -166,38 +163,25 @@ int main()
 		if (wcscmp(command_str, L"Exit()") == 0)
 			break;
 
-		////seperate into tokens and 
-		//tok = wcstok(command_str, sep, &ptr);
-		//if (!tok) continue;
-		//cmd = tok;
-		//command.name = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 1));
-		//wcscpy(command.name, cmd);
-		////wprintf(L"commandName->%s", command.name); //DEBUG
-		//tok = wcstok(NULL, sep, &ptr);
-		//
-		////create a command obj
-		//while (tok != NULL && command.argc < COMMAND_MAX_SIZE) {
-		//	command.argv[argc] = (wchar_t*)malloc(sizeof(wchar_t) *( wcslen(tok) + 2));
-		//	//wprintf(L"argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command.argv[argc]); //DEBUG
-		//	wcscpy(command.argv[argc], tok);
-		//	argc++;
-		//	tok = wcstok(NULL, sep, &ptr);
-
-		//}
-
-		//command.argc = argc;
-
+		
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			continue;
 		}
 
+		//wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
 		//call the function according to the command
 		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-			if (wcscmp(funcs_name, command.name)) {
-				func_arr[i](command.argc,command.argv);
+			if (wcscmp(funcs_name[i], command.name) == 0) {
+				//command.argv = &(command.argv[1]);
+				command.argc--;
+				func_arr[i](command.argc,&command.argv[1]);
 				func_match_flag = TRUE;
 				break;
 			}
+		}
+
+		if (!func_match_flag) {
+			Open_procces(command.argc, command.argv);
 		}
 		//free the memory that the command structure used
 
@@ -205,36 +189,7 @@ int main()
 
 
 		//wprintf(L"Command: %s\n", command);
-		
 
-		/*wchar_t* argv[COMMAND_MAX_SIZE];
-		
-		argv[0] = (wchar_t*)malloc(sizeof(wchar_t) * 40);
-		wcscpy(argv[0], L"C:\\noamprojects");
-
-		cd(1, argv);
-		wcscpy(argv[0], L"noamprojects");
-		cd(1, argv);
-		wcscpy(argv[0], L"CTF");
-		cd(1, argv);*/
-
-		//path = createPath(start_path);
-		////wprintf(L"%d\n", size_of_pathW(start_path));			//DEBUG
-		//									//DEBUG
-
-		//wprintf(L"command: %s\n", command);						//DEBUG
-		//before = (DirectoryNode*)malloc(sizeof(DirectoryNode));	//DEBUG
-		//if (before == NULL) {
-		//	printf("Allocation error. \n");						//DEBUG
-		//}
-		//before->name = L"ofek";									//DEBUG
-		//before->next = NULL;
-		//start_path->next = before;								//DEBUG
-		
-		
-		
-		
-		
 		
 		wprintf(L"<%s>", path);
 

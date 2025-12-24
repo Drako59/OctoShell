@@ -83,7 +83,7 @@ BOOL Open_procces(int argc, wchar_t* argv[]) {
 	//Create the procces
 	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, 0, 0, NULL, NULL, &si, &pi);
 	if (!flag) {
-		printf("Creating process failed.");
+		printf("Creating process failed.\n");
 		free(para);
 		CloseHandle(pi.hThread);
 		CloseHandle(pi.hProcess);
