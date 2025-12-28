@@ -43,6 +43,12 @@ BOOL cd(int argc, char** argv) {
 
 }
 
+void freeNode(DirectoryNode* NodePointer) {
+	
+	free(NodePointer->name);
+	free(NodePointer);
+}
+
 BOOL change_dir_Node(wchar_t* path_to_change) {
 	//wprintf(L"%s\n", path_to_change);
 
@@ -59,8 +65,10 @@ BOOL change_dir_Node(wchar_t* path_to_change) {
 	token = wcstok(path_to_change, sep,&ptr);
 	//wprintf(L"%s \n", token);
 
-	if (wcscmp(token, L"C:") == 0) {
+	if (wcscmp(token, L"C:") == 0 || wcscmp(token, L"c:") == 0) {
 		freePathNode(start_path);
+		wchar_t* token_copy = (wchar_t*)malloc(sizeof(wchar_t*) * 3);
+		wcscpy(token_copy,L"C:");
 
 		//wprintf(L"%s \n", token);
 
@@ -69,26 +77,36 @@ BOOL change_dir_Node(wchar_t* path_to_change) {
 			printf("Malloc allocation failed.\n");
 			exit(EXIT_FAILURE);
 		}
-		New_Node->name = token;
+		New_Node->name = token_copy;
 		New_Node->next = NULL;
+		New_Node->before = NULL;
 		start_path = New_Node;
 		path_pointer = start_path;
 		token = wcstok(NULL, sep, &ptr);
+
+
 		//wprintf(L"%s \n", token);
 
 		while (token != NULL) {
+			token_copy = _wcsdup(token);
 			New_Node = (DirectoryNode*)malloc(sizeof(DirectoryNode));
 			if (New_Node == NULL) {
 				printf("Malloc allocation failed.\n");
 				exit(EXIT_FAILURE);
 			}
 			New_Node->next = NULL;
-			New_Node->name = token;
+			New_Node->name = token_copy;
+			New_Node->before = path_pointer;
 			path_pointer->next = New_Node;
 
 			path_pointer = path_pointer->next;
 			token = wcstok(NULL, sep, &ptr);
 		}
+	}
+	else if (wcscmp(token, L"..") == 0  && wcscmp(path_pointer->before->name, "C:")) {
+		path_pointer = path_pointer->before;
+		freeNode(path_pointer->next);
+		path_pointer->next = NULL;
 	}
 	else {
 
@@ -101,9 +119,12 @@ BOOL change_dir_Node(wchar_t* path_to_change) {
 				exit(EXIT_FAILURE);
 			}
 
-			New_Node->name = token;
+			wchar_t* token_copy = _wcsdup(token);
+
+			New_Node->name = token_copy;
 			New_Node->next = NULL;
 			//wprintf(L"%s \n", token);
+			New_Node->before = path_pointer;
 
 
 
@@ -111,10 +132,12 @@ BOOL change_dir_Node(wchar_t* path_to_change) {
 
 			path_pointer->next = New_Node;
 			path_pointer = path_pointer->next;
+			//wprintf(L"pointer->Name = %s, pointer->Next = %p",path_pointer->name, path_pointer->next);
 			token = wcstok(NULL, sep, &ptr);
 		}
 	}
 
+	free(path_to_change);
 	return 1;
 	
 }

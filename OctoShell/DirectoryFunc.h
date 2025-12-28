@@ -15,6 +15,7 @@ int cd(int argc, char** argv);
 typedef struct DirectoryNode {
 	const wchar_t* name;
 	struct DirectoryNode* next;
+	struct DirectoryNode* before;
 
 } DirectoryNode;
 

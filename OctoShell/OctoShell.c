@@ -27,7 +27,7 @@ void freePathNode(DirectoryNode* pointer) {
 	while ((pointer != NULL)) {
 		before_node = pointer;
 		pointer = pointer->next;
-		wprintf(L"Node Name->%s \n", before_node->name);
+		//wprintf(L"Node Name->%s \n", before_node->name);
 		free(before_node->name);
 		free(before_node);
 	}
