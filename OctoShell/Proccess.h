@@ -1,6 +1,6 @@
 #pragma once	
 
 
-int Open_procces(int argc, wchar_t* argv[]);
+int Open_procces(Command* command );
 
 void print_matrix(wchar_t* argv[], int argc);

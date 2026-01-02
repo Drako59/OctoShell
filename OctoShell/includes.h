@@ -15,5 +15,6 @@
 //#include <wchar.h>
 #include "DirectoryFunc.h"
 #include "Proccess.h"
+#include "stringFuncs.h"
 
-
+#include "TypesDef.h"

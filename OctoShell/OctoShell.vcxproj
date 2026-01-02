@@ -129,6 +129,7 @@
     <ClCompile Include="networks_func.c" />
     <ClCompile Include="OctoShell.c" />
     <ClCompile Include="Proccess.c" />
+    <ClCompile Include="stringFuncs.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basicImports.h" />
@@ -137,6 +138,8 @@
     <ClInclude Include="LinuxFuncs.h" />
     <ClInclude Include="Networks_funcs.h" />
     <ClInclude Include="Proccess.h" />
+    <ClInclude Include="stringFuncs.h" />
+    <ClInclude Include="TypesDef.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

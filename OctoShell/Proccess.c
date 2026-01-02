@@ -20,32 +20,33 @@ void print_matrix(wchar_t* matrix[], int size) {
 }
 
 //Open procces functino
-BOOL Open_procces(int argc, wchar_t* argv[]) {
-	//print_matrix(argv, argc);		//DEBUG
+BOOL Open_procces(Command* command ) {
+		
 
-
+	wchar_t** argv = command->argv;
+	int argc = command->argc;
+	//print_matrix(argv, argc);	//DEBUG
+	//printf("argc: %d", argc);//DEBUG
 	//set the variable we goonaa use to open the proces
 	STARTUPINFO si;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	PROCESS_INFORMATION pi;
-	wchar_t** args;
-	wchar_t* path = argv[0];
-	if (argc > 1) {
-		args = &(argv[1]);
-	}
-	else {
-		args = NULL;
+	
+	wchar_t* path = command->name;
+	
+	if(0 == argc) {
+		argv = NULL;
 	}
 
 	//printf("%p", path);			//DEBUG
 	//wprintf(L"%ls", path);		//DEBUG	
 
 	//calculate the size of the coomand to pass
-	int size = wcslen(path) +  2 + argc;
+	int size = wcslen(path) +  3 + argc ;
 
-	for (int i = 0; i < argc - 1; i++) {
-		size += wcslen((args)[i]);
+	for (int i = 0; i < argc; i++) {
+		size += wcslen((argv)[i]);
 	}
 
 	//Allocate memory for the command to set as a string
@@ -63,23 +64,26 @@ BOOL Open_procces(int argc, wchar_t* argv[]) {
 	wcscat(para, path);
 	wcscat(para, L"\"");
 
-
-	for (int i = 0; i < argc - 1; i++) {
+	//printf("argc: %d\n", argc); //DEBUG
+	for (int i = 0; i < argc; i++) {
 		if (0 == i)
 		{
+			//printf("HERE");//DEBUG
 			wcscat(para, L" ");
-			wcscat(para, (args)[i]);
+			wcscat(para, (argv)[i]);
 			
 		}
 		else {
+			//printf("HERE");//DEBUG
+
 			wcscat(para, L" ");
-			wcscat(para, (args)[i]);
+			wcscat(para, (argv)[i]);
 
 		}
 	}
 	//wprintf(L"PARA: %s\n", para); //DEBUG
 	//printf("%ls\n", para);		//DEBUG
-
+	
 	//Create the procces
 	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, 0, 0, NULL, NULL, &si, &pi);
 	if (!flag) {

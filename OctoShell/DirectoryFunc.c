@@ -10,8 +10,23 @@ void print_matrix_wchar(wchar_t** matrix, int len) {
 }
 
 
+
+BOOL pwd(Command* command) {
+	unsigned int size;
+	LPWSTR buffer = (LPWSTR*)malloc(sizeof(LPWSTR) * MAX_PATH_SIZE);
+
+	if (!GetCurrentDirectoryW(MAX_PATH_SIZE,buffer))
+		printf("Couldn't get current directory.");
+
+	wprintf(L"~%s\n", buffer);
+}
+
+
 //has to fix the problex of set a new cd after one and th eproblems of duplicates paths
-BOOL cd(int argc, char** argv) {
+BOOL cd(Command* command ) {
+	
+	int argc = command->argc;
+	char** argv = command->argv;
 	
 	if (argc == 1) {
 		const wchar_t* path_to_change = argv[0];

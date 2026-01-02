@@ -3,7 +3,6 @@
 #include "basicImports.h"
 
 #include "includes.h"
-#define COMMAND_MAX_SIZE 256
 
 //typedef struct DirectoryNode {
 //	const wchar_t* name;
@@ -11,13 +10,7 @@
 //
 //} DirectoryNode;
 
-typedef struct Command {
-	wchar_t* name;
-	int argc;
-	wchar_t* argv[COMMAND_MAX_SIZE];
-	HANDLE write_into;
-	struct Command* next;
-} Command;
+
 
 void freePathNode(DirectoryNode* pointer) {
 	DirectoryNode* before_node;
@@ -54,16 +47,16 @@ wchar_t* CreatePath(DirectoryNode* start ) {
 	wchar_t* path = (wchar_t*)malloc(sizeof(wchar_t) * size);
 
 	wcscpy(path,start->name);
-	wcscat(path, "\\");
+	/*wcscat(path, "\\");*/ //BEFORE
 
 	while (start->next) {
 		start = start->next;
-
-		wcscat(path,start->name);
 		wcscat(path, "\\");
+		wcscat(path,start->name);
+		//wcscat(path, "\\"); //BEFORE
 
 	}
-
+	wcscat(path, "\\"); 
 	return path;
 }
 
@@ -83,7 +76,7 @@ Command* SepIntoCommand(wchar_t* command_str, Command* command) {
 	command->name = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 1));
 	wcscpy(command->name, cmd);
 	//wprintf(L"commandName->%s", command.name); //DEBUG
-
+	tok = wcstok(NULL, sep, &ptr);
 	//create a command obj
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
 		command->argv[argc] = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 2));
@@ -114,9 +107,9 @@ void FreeCommand(Command* cmd_pointer) {
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
 
-BOOL(*func_arr[])(int, char**) = {cd};
-wchar_t* funcs_name[] = {L"cd"};
-
+BOOL(*func_arr[])(Command*) = {cd, pwd};
+wchar_t* funcs_name[] = {L"cd",L"pwd"};
+wchar_t* funcs_name_cap[] = { L"CD", L"PWD"};
 DirectoryNode* start_path;  
 
 DirectoryNode* path_pointer;
@@ -148,8 +141,8 @@ int main()
 
 	SetCurrentDirectoryW(path_const);
 
-	wprintf(L"<%s>", path);
-
+	//wprintf(L"<%s>", path);
+	wprintf(L"%s:~", path);
 	while (fgetws(command_str, COMMAND_MAX_SIZE - 1, stdin)) {
 		
 		
@@ -160,7 +153,7 @@ int main()
 			command_str[len - 1] = L'\0';
 
 		//Remove the additional char fromthe command
-		if (wcscmp(command_str, L"Exit()") == 0)
+		if (wcscmp(command_str, L"Exit()") == 0	|| wcscmp(command_str, L"exit") == 0 || wcscmp(command_str, L"EXIT") == 0)
 			break;
 
 		
@@ -171,17 +164,17 @@ int main()
 		//wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
 		//call the function according to the command
 		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-			if (wcscmp(funcs_name[i], command.name) == 0) {
+			if (wcscmp(funcs_name[i], command.name) == 0 || wcscmp(funcs_name_cap[i], command.name) == 0) {
 				//command.argv = &(command.argv[1]);
-				command.argc--;
-				func_arr[i](command.argc,&command.argv[1]);
+				
+				func_arr[i](&command);
 				func_match_flag = TRUE;
 				break;
 			}
 		}
 
 		if (!func_match_flag) {
-			Open_procces(command.argc, command.argv);
+			Open_procces(&command);
 		}
 		//free the memory that the command structure used
 
@@ -191,7 +184,7 @@ int main()
 		//wprintf(L"Command: %s\n", command);
 
 		
-		wprintf(L"<%s>", path);
+		wprintf(L"%s:~", path);
 
 	}
 

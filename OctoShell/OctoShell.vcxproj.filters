@@ -33,6 +33,9 @@
     <ClCompile Include="DirectoryFunc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stringFuncs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes.h">
@@ -51,6 +54,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="basicImports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stringFuncs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TypesDef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
