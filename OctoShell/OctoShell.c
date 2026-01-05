@@ -130,9 +130,9 @@ void FreeCommand(Command* cmd_pointer) {
 
 
 
-BOOL(*func_arr[])(Command*) = {cd, pwd, echo};
-wchar_t* funcs_name[] = {L"cd",L"pwd", L"echo" };
-wchar_t* funcs_name_cap[] = { L"CD", L"PWD",L"ECHO"};
+BOOL(*func_arr[])(Command*) = {cd, pwd, echo,clear};
+wchar_t* funcs_name[] = {L"cd",L"pwd", L"echo",L"clear"};
+wchar_t* funcs_name_cap[] = { L"CD", L"PWD",L"ECHO",L"CLEAR"};
 DirectoryNode* start_path;  
 
 DirectoryNode* path_pointer;
@@ -199,7 +199,7 @@ int main()
 			continue;
 		}
 
-		wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
+		//wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
 		//call the function according to the command
 		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
 			if (wcscmp(funcs_name[i], command.name) == 0 || wcscmp(funcs_name_cap[i], command.name) == 0) {

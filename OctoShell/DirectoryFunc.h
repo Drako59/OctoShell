@@ -7,8 +7,7 @@ int pwd(Command* command );
 //int ls(int argc, char** argv);
 int cd(Command* command);
 //int exit(int argc, char** argv);
-//int clear(int argc, char** argv);
-//int echo(Command* command);
+int clear(Command* command);
 
 
 

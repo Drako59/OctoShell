@@ -9,7 +9,19 @@ void print_matrix_wchar(wchar_t** matrix, int len) {
 	}
 }
 
+BOOL clear(Command* command) {
+	COORD cord;
+	cord.X = 0;
+	cord.Y = 0;
+	SetConsoleCursorPosition(command->stdout_file, cord);
 
+	PCWSTR sequence = L"\x1b[2J\x1b[H";
+	int size = wcslen(sequence);
+	int written;
+	WriteFile(command->stdout_file, sequence, size, &written, NULL);
+
+	return written == size;
+}
 
 BOOL pwd(Command* command) {
 	unsigned int size;
