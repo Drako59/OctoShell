@@ -11,7 +11,6 @@
 //} DirectoryNode;
 
 
-
 void freePathNode(DirectoryNode* pointer) {
 	DirectoryNode* before_node;
 	//printf("Here");
@@ -93,7 +92,7 @@ Command* SepIntoCommand(wchar_t* command_str, Command* command) {
 				return NULL;
 			}
 			command->stdout_file = outFile;
-			command->redirect_in = TRUE;
+			command->redirect_out = TRUE;
 			tok = wcstok(NULL, sep, &ptr);
 			continue;
 		}
@@ -131,9 +130,9 @@ void FreeCommand(Command* cmd_pointer) {
 
 
 
-BOOL(*func_arr[])(Command*) = {cd, pwd};
-wchar_t* funcs_name[] = {L"cd",L"pwd"};
-wchar_t* funcs_name_cap[] = { L"CD", L"PWD"};
+BOOL(*func_arr[])(Command*) = {cd, pwd, echo};
+wchar_t* funcs_name[] = {L"cd",L"pwd", L"echo" };
+wchar_t* funcs_name_cap[] = { L"CD", L"PWD",L"ECHO"};
 DirectoryNode* start_path;  
 
 DirectoryNode* path_pointer;
@@ -171,8 +170,8 @@ int main()
 	path = CreatePath(start_path);
 
 	//const wchar_t* path_const = path;
-	const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
-	//const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
+	const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
 	SetCurrentDirectoryW(path_const);
 
 	//wprintf(L"<%s>", path);
@@ -191,12 +190,12 @@ int main()
 			command_str[len - 1] = L'\0';
 
 		//Remove the additional char fromthe command
-		if (wcscmp(command_str, L"Exit()") == 0	|| wcscmp(command_str, L"exit") == 0 || wcscmp(command_str, L"EXIT") == 0)
+		if (wcscmp(command_str, L"Exit()") == 0	|| wcscmp(command_str, L"exit") == 0 || wcscmp(command_str, L"EXIT") == 0 || wcscmp(command_str, L"exit") == 0)
 			break;
-
 		
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			printf("Invalid Command\n");
+			wprintf(L"%s:~", path);
 			continue;
 		}
 
@@ -214,7 +213,7 @@ int main()
 				break;
 			}
 		}
-
+		
 		if (!func_match_flag) {
 			Open_procces(&command);
 		}
@@ -229,6 +228,8 @@ int main()
 		wprintf(L"%s:~", path);
 
 	}
+	
+	EXIT:
 	freePathNode(start_path);
 
 	printf("success");

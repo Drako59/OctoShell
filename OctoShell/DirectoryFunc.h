@@ -8,6 +8,7 @@ int pwd(Command* command );
 int cd(Command* command);
 //int exit(int argc, char** argv);
 //int clear(int argc, char** argv);
+//int echo(Command* command);
 
 
 

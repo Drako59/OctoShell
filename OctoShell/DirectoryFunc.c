@@ -16,12 +16,13 @@ BOOL pwd(Command* command) {
 	LPWSTR buffer = (LPWSTR*)malloc(sizeof(LPWSTR) * MAX_PATH_SIZE );
 
 	if (!GetCurrentDirectoryW(MAX_PATH_SIZE - 2,buffer))
-		printf("Couldn't get current directory.");
+		printf("Couldn't get current directory.\n");
 	wcsncat(buffer, L"\n", MAX_PATH_SIZE);
 	size = wcslen(buffer) * sizeof(wchar_t);
 	int written;
 	
 	WriteFile(command->stdout_file, buffer, size, &written, NULL);
+	free(buffer);
 	return size == written;
 }
 
