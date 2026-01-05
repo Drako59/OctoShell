@@ -171,7 +171,8 @@ int main()
 	path = CreatePath(start_path);
 
 	//const wchar_t* path_const = path;
-	const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+	const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
+	//const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
 	SetCurrentDirectoryW(path_const);
 
 	//wprintf(L"<%s>", path);
@@ -205,7 +206,10 @@ int main()
 			if (wcscmp(funcs_name[i], command.name) == 0 || wcscmp(funcs_name_cap[i], command.name) == 0) {
 				//command.argv = &(command.argv[1]);
 				
-				func_arr[i](&command);
+				if (func_arr[i](&command) == FALSE)
+				{
+					printf("There was a problem in function process.");
+				};
 				func_match_flag = TRUE;
 				break;
 			}
