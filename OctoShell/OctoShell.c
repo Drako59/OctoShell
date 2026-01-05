@@ -66,6 +66,9 @@ Command* SepIntoCommand(wchar_t* command_str, Command* command) {
 	wchar_t* ptr = NULL;
 	wchar_t* cmd;
 	int argc = 0;
+	HANDLE outFile;
+	HANDLE inFile;
+	
 
 	wchar_t* sep = L" ";
 	wchar_t* tok;
@@ -79,6 +82,21 @@ Command* SepIntoCommand(wchar_t* command_str, Command* command) {
 	tok = wcstok(NULL, sep, &ptr);
 	//create a command obj
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
+		if (wcsncmp(tok, L">", COMMAND_MAX_SIZE) == 0 ) {
+			tok = wcstok(NULL, sep, &ptr);
+			if (tok == NULL)
+				break;
+			outFile = CreateFileW(tok, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (outFile == NULL || outFile == INVALID_HANDLE_VALUE)
+			{
+				printf("There was an error opening th file.\n");
+				return NULL;
+			}
+			command->stdout_file = outFile;
+			command->redirect_in = TRUE;
+			tok = wcstok(NULL, sep, &ptr);
+			continue;
+		}
 		command->argv[argc] = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 2));
 		//wprintf(L"argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command.argv[argc]); //DEBUG
 		wcscpy(command->argv[argc], tok);
@@ -97,6 +115,10 @@ Command* SepIntoCommand(wchar_t* command_str, Command* command) {
 void FreeCommand(Command* cmd_pointer) {
 	while (cmd_pointer != NULL) {
 		free(cmd_pointer->name);
+		if (cmd_pointer->redirect_in)
+			CloseHandle(cmd_pointer->stdin_file);
+		if (cmd_pointer->redirect_out)
+			CloseHandle(cmd_pointer->stdout_file);
 		for (int i = 0; i < cmd_pointer->argc; i++) {
 			free(cmd_pointer->argv[i]);
 		}
@@ -105,6 +127,8 @@ void FreeCommand(Command* cmd_pointer) {
 }
 
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
+
+
 
 
 BOOL(*func_arr[])(Command*) = {cd, pwd};
@@ -121,6 +145,15 @@ wchar_t* path;
 
 int main()
 {
+	HANDLE hStdOutFile = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE hStdInputFile = GetStdHandle(STD_INPUT_HANDLE);
+	if ( hStdOutFile == INVALID_HANDLE_VALUE || hStdOutFile == NULL ||
+		hStdInputFile == INVALID_HANDLE_VALUE || hStdInputFile == NULL) {
+		DWORD e1 = GetLastError();
+		printf("hOut=%p lastErr1=%lu \n", hStdOutFile, e1);
+		printf("couldn't load stdin and stdout handles\n.");
+		return 1;
+	}
 	BOOL func_match_flag = FALSE;
 	//print_matrix(argv, argc);
 	
@@ -137,15 +170,19 @@ int main()
 
 	path = CreatePath(start_path);
 
-	const wchar_t* path_const = path;
-
+	//const wchar_t* path_const = path;
+	const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
 	SetCurrentDirectoryW(path_const);
 
 	//wprintf(L"<%s>", path);
 	wprintf(L"%s:~", path);
 	while (fgetws(command_str, COMMAND_MAX_SIZE - 1, stdin)) {
 		
-		
+		//Set the redirections
+		command.stdin_file = hStdInputFile;
+		command.stdout_file = hStdOutFile;
+		command.redirect_in = FALSE;
+		command.redirect_out = FALSE;
 		func_match_flag = FALSE;
 		
 		len = wcslen(command_str);
@@ -158,6 +195,7 @@ int main()
 
 		
 		if (SepIntoCommand(command_str, &command) == NULL) {
+			printf("Invalid Command\n");
 			continue;
 		}
 
@@ -187,12 +225,11 @@ int main()
 		wprintf(L"%s:~", path);
 
 	}
-
 	freePathNode(start_path);
 
 	printf("success");
 
-
+	return 0;
 
 }
 

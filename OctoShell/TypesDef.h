@@ -9,6 +9,8 @@ typedef struct Command {
 	wchar_t* name;
 	int argc;
 	wchar_t* argv[COMMAND_MAX_SIZE];
+	BOOL redirect_in;
+	BOOL redirect_out;
 	HANDLE stdin_file;
 	HANDLE stdout_file;
 	struct Command* next;

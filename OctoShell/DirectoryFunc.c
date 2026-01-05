@@ -13,12 +13,16 @@ void print_matrix_wchar(wchar_t** matrix, int len) {
 
 BOOL pwd(Command* command) {
 	unsigned int size;
-	LPWSTR buffer = (LPWSTR*)malloc(sizeof(LPWSTR) * MAX_PATH_SIZE);
+	LPWSTR buffer = (LPWSTR*)malloc(sizeof(LPWSTR) * MAX_PATH_SIZE );
 
-	if (!GetCurrentDirectoryW(MAX_PATH_SIZE,buffer))
+	if (!GetCurrentDirectoryW(MAX_PATH_SIZE - 2,buffer))
 		printf("Couldn't get current directory.");
-
-	wprintf(L"~%s\n", buffer);
+	wcsncat(buffer, L"\n", MAX_PATH_SIZE);
+	size = wcslen(buffer) * sizeof(wchar_t);
+	int written;
+	
+	WriteFile(command->stdout_file, buffer, size, &written, NULL);
+	return size == written;
 }
 
 
