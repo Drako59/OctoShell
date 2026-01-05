@@ -199,7 +199,7 @@ int main()
 			continue;
 		}
 
-		//wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
+		wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
 		//call the function according to the command
 		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
 			if (wcscmp(funcs_name[i], command.name) == 0 || wcscmp(funcs_name_cap[i], command.name) == 0) {
