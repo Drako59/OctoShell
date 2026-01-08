@@ -10,11 +10,11 @@ int cd(Command* command);
 int clear(Command* command);
 
 
-
+wchar_t* utf8_to_utf16(const char* s);
 
 
 void freePathNode(DirectoryNode* path_pointer);
 
-wchar_t* CreatePath(DirectoryNode* start);
+char* CreatePath(DirectoryNode* start);
 
 

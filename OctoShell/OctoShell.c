@@ -9,7 +9,24 @@
 //	struct DirectoryNode* next;
 //
 //} DirectoryNode;
+wchar_t* utf8_to_utf16(const char* s)
+{
+	if (!s) return NULL;
 
+	
+	int n = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
+	if (n <= 0) return NULL;
+
+	wchar_t* w = (wchar_t*)malloc((size_t)n * sizeof(wchar_t));
+	if (!w) return NULL;
+
+	if (MultiByteToWideChar(CP_UTF8, 0, s, -1, w, n) == 0) {
+		free(w);
+		return NULL;
+	}
+
+	return w; 
+}
 
 void freePathNode(DirectoryNode* pointer) {
 	DirectoryNode* before_node;
@@ -32,60 +49,62 @@ int size_of_pathW(DirectoryNode* start)
 {
 	int size = 0;
 	while ((start)) {
-		size += wcslen(start->name) + 1;
+		size += strlen(start->name) + 1;
 		start = start->next;
 	}
 	return size + 1;
 }
 
 
-wchar_t* CreatePath(DirectoryNode* start ) {
+char* CreatePath(DirectoryNode* start ) {
 
 
 	int size = size_of_pathW(start);
-	wchar_t* path = (wchar_t*)malloc(sizeof(wchar_t) * size);
+	char* path = (char*)malloc(sizeof(char) * size);
 
-	wcscpy(path,start->name);
+	strcpy(path,start->name);
 	/*wcscat(path, "\\");*/ //BEFORE
 
 	while (start->next) {
 		start = start->next;
-		wcscat(path, "\\");
-		wcscat(path,start->name);
+		strcat(path, "\\");
+		strcat(path,start->name);
 		//wcscat(path, "\\"); //BEFORE
 
 	}
-	wcscat(path, "\\"); 
+	strcat(path, "\\"); 
 	return path;
 }
 
 
 
-Command* SepIntoCommand(wchar_t* command_str, Command* command) {
-	wchar_t* ptr = NULL;
-	wchar_t* cmd;
+Command* SepIntoCommand(char* command_str, Command* command) {
+	char* ptr = NULL;
+	char* cmd;
 	int argc = 0;
 	HANDLE outFile;
 	HANDLE inFile;
 	
-
-	wchar_t* sep = L" ";
-	wchar_t* tok;
+	wchar_t* unicode_transfer;
+	char* sep = " ";
+	char* tok;
 	//seperate into tokens and 
-	tok = wcstok(command_str, sep, &ptr);
+	tok = strtok(command_str, sep);
 	if (!tok) return NULL;
 	cmd = tok;
-	command->name = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 1));
-	wcscpy(command->name, cmd);
+	command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
+	strcpy(command->name, cmd);
 	//wprintf(L"commandName->%s", command.name); //DEBUG
-	tok = wcstok(NULL, sep, &ptr);
+	tok = strtok(NULL, sep);
 	//create a command obj
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
-		if (wcsncmp(tok, L">", COMMAND_MAX_SIZE) == 0 ) {
-			tok = wcstok(NULL, sep, &ptr);
+		if (strncmp(tok, ">", COMMAND_MAX_SIZE) == 0 ) {
+			tok = strtok(NULL, sep);
 			if (tok == NULL)
 				break;
-			outFile = CreateFileW(tok, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			unicode_transfer = utf8_to_utf16(tok);
+			outFile = CreateFileW(unicode_transfer, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			free(unicode_transfer);
 			if (outFile == NULL || outFile == INVALID_HANDLE_VALUE)
 			{
 				printf("There was an error opening th file.\n");
@@ -93,14 +112,14 @@ Command* SepIntoCommand(wchar_t* command_str, Command* command) {
 			}
 			command->stdout_file = outFile;
 			command->redirect_out = TRUE;
-			tok = wcstok(NULL, sep, &ptr);
+			tok = strtok(NULL, sep);
 			continue;
 		}
-		command->argv[argc] = (wchar_t*)malloc(sizeof(wchar_t) * (wcslen(tok) + 2));
+		command->argv[argc] = (char*)malloc(sizeof(char) * (strlen(tok) + 2));
 		//wprintf(L"argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command.argv[argc]); //DEBUG
-		wcscpy(command->argv[argc], tok);
+		strcpy(command->argv[argc], tok);
 		argc++;
-		tok = wcstok(NULL, sep, &ptr);
+		tok = strtok(NULL, sep);
 
 	}
 
@@ -131,15 +150,15 @@ void FreeCommand(Command* cmd_pointer) {
 
 
 BOOL(*func_arr[])(Command*) = {cd, pwd, echo,clear};
-wchar_t* funcs_name[] = {L"cd",L"pwd", L"echo",L"clear"};
-wchar_t* funcs_name_cap[] = { L"CD", L"PWD",L"ECHO",L"CLEAR"};
+char* funcs_name[] = {"cd","pwd", "echo","clear"};
+char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR"};
 DirectoryNode* start_path;  
 
 DirectoryNode* path_pointer;
 DirectoryNode* before;
-wchar_t command_str[COMMAND_MAX_SIZE];
+char command_str[COMMAND_MAX_SIZE];
 
-wchar_t* path;
+char* path;
 //--------------------------------------------------------------------------------------------------------------------------------------
 
 int main()
@@ -162,8 +181,8 @@ int main()
 	//wchar_t** argv;
 	int len;
 	start_path = (DirectoryNode*)malloc(sizeof(DirectoryNode));
-	start_path->name = (wchar_t*)malloc(sizeof(wchar_t) * 3);
-	wcscpy(start_path->name,  L"C:");
+	start_path->name = (char*)malloc(sizeof(char) * 3);
+	strcpy(start_path->name,  "C:");
 	start_path->next = NULL;
 	path_pointer = start_path;
 
@@ -171,12 +190,12 @@ int main()
 
 	//const wchar_t* path_const = path;
 	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
-	const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+	const char* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
 	SetCurrentDirectoryW(path_const);
 
 	//wprintf(L"<%s>", path);
-	wprintf(L"%s:~", path);
-	while (fgetws(command_str, COMMAND_MAX_SIZE - 1, stdin)) {
+	printf("%s:~", path);
+	while (fgets(command_str, COMMAND_MAX_SIZE - 1, stdin)) {
 		
 		//Set the redirections
 		command.stdin_file = hStdInputFile;
@@ -185,24 +204,24 @@ int main()
 		command.redirect_out = FALSE;
 		func_match_flag = FALSE;
 		
-		len = wcslen(command_str);
-		if (len > 0 && command_str[len - 1] == L'\n')
+		len = strlen(command_str);
+		if (len > 0 && command_str[len - 1] == '\n')
 			command_str[len - 1] = L'\0';
 
 		//Remove the additional char fromthe command
-		if (wcscmp(command_str, L"Exit()") == 0	|| wcscmp(command_str, L"exit") == 0 || wcscmp(command_str, L"EXIT") == 0 || wcscmp(command_str, L"exit") == 0)
+		if (strcmp(command_str, "Exit()") == 0	|| strcmp(command_str, "exit") == 0 || strcmp(command_str, "EXIT") == 0 || strcmp(command_str, "exit") == 0)
 			break;
 		
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			printf("Invalid Command\n");
-			wprintf(L"%s:~", path);
+			printf("%s:~", path);
 			continue;
 		}
 
 		//wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
 		//call the function according to the command
 		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-			if (wcscmp(funcs_name[i], command.name) == 0 || wcscmp(funcs_name_cap[i], command.name) == 0) {
+			if (strcmp(funcs_name[i], command.name) == 0 || strcmp(funcs_name_cap[i], command.name) == 0) {
 				//command.argv = &(command.argv[1]);
 				
 				if (func_arr[i](&command) == FALSE)
@@ -225,7 +244,7 @@ int main()
 		//wprintf(L"Command: %s\n", command);
 
 		
-		wprintf(L"%s:~", path);
+		printf("%s:~", path);
 
 	}
 	

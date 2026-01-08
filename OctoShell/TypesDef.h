@@ -6,9 +6,9 @@
 #define COMMAND_MAX_SIZE 256
 
 typedef struct Command {
-	wchar_t* name;
+	char* name;
 	int argc;
-	wchar_t* argv[COMMAND_MAX_SIZE];
+	char* argv[COMMAND_MAX_SIZE];
 	BOOL redirect_in;
 	BOOL redirect_out;
 	HANDLE stdin_file;
@@ -22,13 +22,13 @@ typedef struct Command {
 #define PATH_POINTER
 
 typedef struct DirectoryNode {
-	const wchar_t* name;
+	const char* name;
 	struct DirectoryNode* next;
 	struct DirectoryNode* before;
 
 } DirectoryNode;
 
-extern wchar_t* path;
+extern char* path;
 extern DirectoryNode* start_path;
 extern DirectoryNode* path_pointer;
 #endif
