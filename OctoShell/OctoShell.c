@@ -163,6 +163,12 @@ char* path;
 
 int main()
 {
+
+	UINT original_cp = GetConsoleOutputCP(); // Save original code page
+
+	printf("%u \n", original_cp);
+	SetConsoleOutputCP(CP_UTF8);
+
 	HANDLE hStdOutFile = GetStdHandle(STD_OUTPUT_HANDLE);
 	HANDLE hStdInputFile = GetStdHandle(STD_INPUT_HANDLE);
 	if ( hStdOutFile == INVALID_HANDLE_VALUE || hStdOutFile == NULL ||

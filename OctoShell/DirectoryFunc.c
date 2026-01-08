@@ -49,8 +49,8 @@ BOOL cd(Command* command ) {
 		//const wchar_t* path_to_change =  L"C:\\noamprojects";
 		//wprintf(L"%s\n", argv[0]);
 		unicode_buffer = utf8_to_utf16(path_to_change);
-		wprintf(L"%s\n", unicode_buffer);
-		if (SetCurrentDirectoryW(path_to_change) == 0 ){
+		//wprintf(L"%s\n", unicode_buffer);
+		if (SetCurrentDirectoryW(unicode_buffer) == 0 ){
 			free(unicode_buffer);
 			printf("The directoy path isn't valid.\n Try an existing path......... \n");
 			return 0;

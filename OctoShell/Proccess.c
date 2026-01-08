@@ -22,8 +22,8 @@ void print_matrix(wchar_t* matrix[], int size) {
 //Open procces functino
 BOOL Open_procces(Command* command ) {
 		
-
-	wchar_t** argv = command->argv;
+	wchar_t* unicode_buffer;
+	char** argv = command->argv;
 	int argc = command->argc;
 	//print_matrix(argv, argc);	//DEBUG
 	//printf("argc: %d", argc);//DEBUG
@@ -33,7 +33,7 @@ BOOL Open_procces(Command* command ) {
 	si.cb = sizeof(si);
 	PROCESS_INFORMATION pi;
 	
-	wchar_t* path = command->name;
+	char* path = command->name;
 	
 	if(0 == argc) {
 		argv = NULL;
@@ -43,15 +43,15 @@ BOOL Open_procces(Command* command ) {
 	//wprintf(L"%ls", path);		//DEBUG	
 
 	//calculate the size of the coomand to pass
-	int size = wcslen(path) +  3 + argc ;
+	int size = strlen(path) +  3 + argc ;
 
 	for (int i = 0; i < argc; i++) {
-		size += wcslen((argv)[i]);
+		size += strlen((argv)[i]);
 	}
 
 	//Allocate memory for the command to set as a string
 
-	wchar_t* para = (wchar_t*)malloc(size * sizeof(wchar_t));
+	char* para = (wchar_t*)malloc(size * sizeof(wchar_t));
 
 	if (para == NULL) {
 		printf("Malloc failed. no availible space in heap.");
@@ -61,7 +61,9 @@ BOOL Open_procces(Command* command ) {
 
 	//create the command by adding the string as UNICODE using wcsapy and wcscat
 	wcscpy(para, L"\"");
-	wcscat(para, path);
+	unicode_buffer = utf8_to_utf16(path);
+	wcscat(para, unicode_buffer);
+	free(unicode_buffer);
 	wcscat(para, L"\"");
 
 	//printf("argc: %d\n", argc); //DEBUG
@@ -70,14 +72,19 @@ BOOL Open_procces(Command* command ) {
 		{
 			//printf("HERE");//DEBUG
 			wcscat(para, L" ");
-			wcscat(para, (argv)[i]);
+			unicode_buffer = utf8_to_utf16(argv[i]);
+			wcscat(para, unicode_buffer);
+			free(unicode_buffer);
+
 			
 		}
 		else {
 			//printf("HERE");//DEBUG
+			unicode_buffer = utf8_to_utf16(argv[i]);
 
 			wcscat(para, L" ");
-			wcscat(para, (argv)[i]);
+			wcscat(para, unicode_buffer);
+			free(unicode_buffer);
 
 		}
 	}
