@@ -9,6 +9,28 @@
 //	struct DirectoryNode* next;
 //
 //} DirectoryNode;
+
+
+
+void printAllocationError(void) {
+	printf("OctoShell: There is no available space in heap. try to upgrade your pc maybe?(pls?) :(\n");
+
+}
+
+void FreeCommand(Command* cmd_pointer) {
+	while (cmd_pointer != NULL) {
+		free(cmd_pointer->name);
+		if (cmd_pointer->redirect_in)
+			CloseHandle(cmd_pointer->stdin_file);
+		if (cmd_pointer->redirect_out)
+			CloseHandle(cmd_pointer->stdout_file);
+		for (int i = 0; i < cmd_pointer->argc; i++) {
+			free(cmd_pointer->argv[i]);
+		}
+		cmd_pointer = cmd_pointer->next;
+	}
+}
+
 wchar_t* utf8_to_utf16(const char* s)
 {
 	if (!s) return NULL;
@@ -56,6 +78,25 @@ int size_of_pathW(DirectoryNode* start)
 }
 
 
+BOOL StrHeapCpy(char** pDst,char* pSrc) {
+	if (!pSrc) {
+		*pDst = NULL;
+		return TRUE;
+	}
+
+	size_t NumOfBytes = strlen(pSrc) * sizeof(char) + sizeof(char);
+	*pDst = (char*)malloc(sizeof(char) * NumOfBytes);
+
+	if (*pDst == NULL) {
+		printAllocationError();
+		return NULL;
+	}
+	memcpy(*pDst, pSrc, NumOfBytes);
+	return TRUE;
+}
+
+
+
 char* CreatePath(DirectoryNode* start ) {
 
 
@@ -79,6 +120,37 @@ char* CreatePath(DirectoryNode* start ) {
 //HANDLE OpenFileWinApi() {
 //	HANDLE file = 
 //}
+
+Command* CopyCommand(Command* command) {
+	Command* command_copy = (Command*)malloc(sizeof(Command) * 1);
+
+	if (command_copy == NULL) {
+		printAllocationError();
+		return NULL;
+	}
+	/*size_t NumOfBytes = strlen(command->name) * sizeof(char);
+	command_copy->name = (char*)malloc(sizeof(char*) * NumOfBytes);
+	memcpy(command_copy->name, command->name, NumOfBytes);*/
+	//printf("Command->name: %s\n", command->name); //DEBUG
+	if (StrHeapCpy(&(command_copy->name), command->name) == NULL) {
+		free(command_copy);
+		return NULL;
+	}
+	memcpy(command_copy->argv, command->argv, sizeof(command->argv));
+	command_copy->argc = command->argc;
+	command_copy->redirect_in = command->redirect_in;
+	command_copy->redirect_out = command->redirect_out;
+	command_copy->stdin_file = command->stdin_file;
+	command_copy->stdout_file = command->stdout_file;
+
+
+	return command_copy;
+
+
+
+}
+
+
 
 Command* SepIntoCommand(char* command_str, Command* command) {
 	char* ptr = NULL;
@@ -131,20 +203,28 @@ Command* SepIntoCommand(char* command_str, Command* command) {
 
 }
 
+void ExitFree(Command* command) {
+	FreeCommand(command);
 
-void FreeCommand(Command* cmd_pointer) {
-	while (cmd_pointer != NULL) {
-		free(cmd_pointer->name);
-		if (cmd_pointer->redirect_in)
-			CloseHandle(cmd_pointer->stdin_file);
-		if (cmd_pointer->redirect_out)
-			CloseHandle(cmd_pointer->stdout_file);
-		for (int i = 0; i < cmd_pointer->argc; i++) {
-			free(cmd_pointer->argv[i]);
-		}
-		cmd_pointer = cmd_pointer->next;
-	}
 }
+
+
+
+BOOL AddString(char** src, char* dst) {
+	char* p;
+	p = realloc(*src, sizeof(char) * (strlen(**src) + strlen(dst) + 1));
+	if (*src == NULL){
+		printAllocationError();
+		return FALSE;
+	}
+	*src = p;
+	if (strncat(*src, dst, strlen(dst))) {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
 
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
@@ -162,6 +242,31 @@ char command_str[COMMAND_MAX_SIZE];
 char* function_bin = "C:\\Users\\ayele\\source\\repos\\OctoShell\\x64\\Func_Bin\\";
 char* path;
 //--------------------------------------------------------------------------------------------------------------------------------------
+//function that uses the global varibals
+
+Command* BinCommand(Command* command) {
+	Command* copy_command = CopyCommand(command);
+
+	if (copy_command == NULL)
+		return NULL;
+
+	char* bin_path = (char*)malloc((strlen(function_bin) + strlen(copy_command->name) + 1) * sizeof(char));
+	if (bin_path == NULL) {
+		printAllocationError();
+		FreeCommand(copy_command);
+		return NULL;
+	}
+	strcpy(bin_path, function_bin);
+	strcat(bin_path, copy_command->name);
+	//printf("%s\n", copy_command->name); //DEBUG
+
+	//printf("%s\n", bin_path); //DEBUG
+	free(copy_command->name);
+	copy_command->name = bin_path;
+
+	return copy_command;
+}
+
 
 int main()
 {
@@ -234,7 +339,7 @@ int main()
 				
 				if (func_arr[i](&command) == FALSE)
 				{
-					printf("There was a problem in function process.");
+					printf("There was a problem in function process.\n");
 				};
 				func_match_flag = TRUE;
 				break;
@@ -243,13 +348,25 @@ int main()
 		
 		if (!func_match_flag) {
 			
-			if (!Open_procces(&command))
+			Command* binCommand = BinCommand(&command);
+			//printf("%s\n", binCommand->name);
+			if (binCommand == NULL)
+			{
+				ExitFree(&command);
+				continue;
+			}
+			if (Open_procces(binCommand)) {
+				printf("");
+			}
+			else if(!Open_procces(&command))
 				printf("Creating process failed.\n");
+			free(binCommand->name);
+			free(binCommand);
+				
 		}
 		//free the memory that the command structure used
 
-		FreeCommand(&command);
-
+		ExitFree(&command);
 
 		//wprintf(L"Command: %s\n", command);
 
@@ -266,5 +383,4 @@ int main()
 	return 0;
 
 }
-
 

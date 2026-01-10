@@ -39,7 +39,7 @@ BOOL Open_procces(Command* command ) {
 		argv = NULL;
 	}
 
-	//printf("%p", path);			//DEBUG
+	//printf("%s\n", path);			//DEBUG
 	//wprintf(L"%ls", path);		//DEBUG	
 
 	//calculate the size of the coomand to pass
@@ -50,11 +50,11 @@ BOOL Open_procces(Command* command ) {
 	}
 
 	//Allocate memory for the command to set as a string
-
+	//printf("%d\n", size);
 	char* para = (wchar_t*)malloc(size * sizeof(wchar_t));
 
 	if (para == NULL) {
-		printf("Malloc failed. no availible space in heap.");
+		printf("Malloc failed. no availible space in heap.\n");
 		
 		return 0;
 	}
