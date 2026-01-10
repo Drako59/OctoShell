@@ -124,8 +124,8 @@ int main(int argc, char** argv)
 		if (path_point ==  (path_point & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			// check if in the same path:
-			wchar_t* srcFullPath[MAX_PATH];
-			wchar_t* dstFullPath[MAX_PATH];
+			wchar_t srcFullPath[MAX_PATH];
+			wchar_t dstFullPath[MAX_PATH];
 			wchar_t* unicode_buffer; 
 
 			char* dir_path = RemoveFileNameFromPath(argv[1]);
@@ -207,9 +207,9 @@ int main(int argc, char** argv)
 
 		char buffer[4096];
 
-		int n;
+		size_t n;
 		n = fread(buffer, sizeof(char), 4096, source);
-		int n_write;
+		size_t n_write;
 		while ( n > 0)
 		{
 			n_write = fwrite(buffer, sizeof(char) , n, destination);
@@ -227,8 +227,8 @@ int main(int argc, char** argv)
 		fclose(source);
 		fclose(destination);
 
-		//free(uni_source);
-		//free(uni_destination); 
+		free(uni_source);
+		free(uni_destination); 
 		//check if the parameter is a dict
 		printf("cp: file copied.\n");
 
