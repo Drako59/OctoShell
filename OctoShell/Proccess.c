@@ -55,6 +55,7 @@ BOOL Open_procces(Command* command ) {
 
 	if (para == NULL) {
 		printf("Malloc failed. no availible space in heap.");
+		
 		return 0;
 	}
 
@@ -94,7 +95,7 @@ BOOL Open_procces(Command* command ) {
 	//Create the procces
 	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, 0, 0, NULL, NULL, &si, &pi);
 	if (!flag) {
-		printf("Creating process failed.\n");
+		//printf("Creating process failed.\n");
 		free(para);
 		CloseHandle(pi.hThread);
 		CloseHandle(pi.hProcess);

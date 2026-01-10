@@ -76,7 +76,9 @@ char* CreatePath(DirectoryNode* start ) {
 	return path;
 }
 
-
+//HANDLE OpenFileWinApi() {
+//	HANDLE file = 
+//}
 
 Command* SepIntoCommand(char* command_str, Command* command) {
 	char* ptr = NULL;
@@ -157,7 +159,7 @@ DirectoryNode* start_path;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
 char command_str[COMMAND_MAX_SIZE];
-
+char* function_bin = "C:\\Users\\ayele\\source\\repos\\OctoShell\\x64\\Func_Bin\\";
 char* path;
 //--------------------------------------------------------------------------------------------------------------------------------------
 
@@ -196,7 +198,7 @@ int main()
 
 	//const wchar_t* path_const = path;
 	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
-	const char* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+	const wchar_t* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
 	SetCurrentDirectoryW(path_const);
 
 	//wprintf(L"<%s>", path);
@@ -240,7 +242,9 @@ int main()
 		}
 		
 		if (!func_match_flag) {
-			Open_procces(&command);
+			
+			if (!Open_procces(&command))
+				printf("Creating process failed.\n");
 		}
 		//free the memory that the command structure used
 
