@@ -1,4 +1,4 @@
-// OctoShell.cpp : This file contains the 'main' function. Program execution begins and ends there.
+﻿// OctoShell.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include "basicImports.h"
 
@@ -270,7 +270,6 @@ Command* BinCommand(Command* command) {
 
 int main()
 {
-
 	UINT original_cp = GetConsoleOutputCP(); // Save original code page
 
 	printf("%u \n", original_cp);
