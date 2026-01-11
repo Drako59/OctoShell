@@ -67,7 +67,7 @@ void freePathNode(DirectoryNode* pointer) {
 	
 }
 
-int size_of_pathW(DirectoryNode* start) 
+int size_of_path(DirectoryNode* start) 
 {
 	int size = 0;
 	while ((start)) {
@@ -100,7 +100,7 @@ BOOL StrHeapCpy(char** pDst,char* pSrc) {
 char* CreatePath(DirectoryNode* start ) {
 
 
-	int size = size_of_pathW(start);
+	int size = size_of_path(start);
 	char* path = (char*)malloc(sizeof(char) * size);
 
 	strcpy(path,start->name);
@@ -128,10 +128,7 @@ Command* CopyCommand(Command* command) {
 		printAllocationError();
 		return NULL;
 	}
-	/*size_t NumOfBytes = strlen(command->name) * sizeof(char);
-	command_copy->name = (char*)malloc(sizeof(char*) * NumOfBytes);
-	memcpy(command_copy->name, command->name, NumOfBytes);*/
-	//printf("Command->name: %s\n", command->name); //DEBUG
+	
 	if (StrHeapCpy(&(command_copy->name), command->name) == NULL) {
 		free(command_copy);
 		return NULL;
@@ -150,9 +147,15 @@ Command* CopyCommand(Command* command) {
 
 }
 
+void FreeStrArr(char** arr, int argc) {
+	for (int i = 0; i < argc; i++) {
+		free(arr[i]);
+	}
+	free(arr);
 
+}
 
-Command* SepIntoCommand(char* command_str, Command* command) {
+Command* SepIntoCommand(char* command_str, Command* command) { //to choose if return a command obj or to pass one
 	char* ptr = NULL;
 	char* cmd;
 	int argc = 0;
@@ -182,6 +185,8 @@ Command* SepIntoCommand(char* command_str, Command* command) {
 			if (outFile == NULL || outFile == INVALID_HANDLE_VALUE)
 			{
 				printf("There was an error opening th file.\n");
+				FreeStrArr(command->argv, command->argc);
+				free(command->name);
 				return NULL;
 			}
 			command->stdout_file = outFile;
@@ -212,7 +217,7 @@ void ExitFree(Command* command) {
 
 BOOL AddString(char** src, char* dst) {
 	char* p;
-	p = realloc(*src, sizeof(char) * (strlen(**src) + strlen(dst) + 1));
+	p = realloc(*src, sizeof(char) * (strlen(*src) + strlen(dst) + 1));
 	if (*src == NULL){
 		printAllocationError();
 		return FALSE;
@@ -268,6 +273,13 @@ Command* BinCommand(Command* command) {
 }
 
 
+void Command_init(Command* command, HANDLE hStdInputFile, HANDLE hStdOutFile) {
+	command->stdin_file = hStdInputFile;
+	command->stdout_file = hStdOutFile;
+	command->redirect_in = FALSE;
+	command->redirect_out = FALSE;
+}
+
 int main()
 {
 	UINT original_cp = GetConsoleOutputCP(); // Save original code page
@@ -302,7 +314,7 @@ int main()
 
 	//const wchar_t* path_const = path;
 	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
-	const wchar_t* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+	const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
 	SetCurrentDirectoryW(path_const);
 
 	//wprintf(L"<%s>", path);
@@ -310,10 +322,7 @@ int main()
 	while (fgets(command_str, COMMAND_MAX_SIZE - 1, stdin)) {
 		
 		//Set the redirections
-		command.stdin_file = hStdInputFile;
-		command.stdout_file = hStdOutFile;
-		command.redirect_in = FALSE;
-		command.redirect_out = FALSE;
+		Command_init(&command,hStdInputFile,hStdOutFile);
 		func_match_flag = FALSE;
 		
 		len = strlen(command_str);
@@ -363,6 +372,10 @@ int main()
 			free(binCommand);
 				
 		}
+
+
+
+
 		//free the memory that the command structure used
 
 		ExitFree(&command);
