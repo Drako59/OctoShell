@@ -310,12 +310,18 @@ int main()
 	start_path->next = NULL;
 	path_pointer = start_path;
 
-	path = CreatePath(start_path);
 
 	//const wchar_t* path_const = path;
 	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
-	const wchar_t* path_const = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
-	SetCurrentDirectoryW(path_const);
+	const wchar_t* path_constW = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+	const char* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+
+	//set the default path: 
+
+	SetCurrentDirectoryW(path_constW);
+	change_dir_Node(path_const); //NEED TO BE OUT OF COMMNET WHEN FINISHED.
+	path = CreatePath(start_path);
+	//************************************
 
 	//wprintf(L"<%s>", path);
 	printf("%s:~", path);

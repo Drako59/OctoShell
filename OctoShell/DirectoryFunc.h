@@ -10,6 +10,7 @@ int cd(Command* command);
 int clear(Command* command);
 
 
+BOOL change_dir_Node(char* path_to_change);
 wchar_t* utf8_to_utf16(const char* s);
 
 

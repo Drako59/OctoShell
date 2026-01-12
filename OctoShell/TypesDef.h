@@ -18,6 +18,15 @@ typedef struct Command {
 
 #endif
 
+
+#ifndef STRING_UNION
+#define STRING_UNION
+typedef union string {
+	char* utf8;
+	wchar_t* unicode;
+} string;
+
+#endif
 #ifndef PATH_POINTER
 #define PATH_POINTER
 
