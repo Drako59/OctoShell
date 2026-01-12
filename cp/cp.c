@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     FILE* source; 
     FILE* destination;
     if (argc < 3) {
-        printf("The function takes two arguments at least.\n");
+        printf("cp: The function takes two arguments at least.\n");
 		return 1;
     }
     BOOL parameters_parsed = FALSE;
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 		source = fopen(argv[1], "rb");
 
 		if (source == NULL) {
-			printf("Couldn't open source file due to an error.\n");
+			printf("cp: Couldn't open source file due to an error.\n");
 			perror("fopen");
 			return 1;
 		}
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 
 			if (check1 == 0 || check2 == 0 || check1 > MAX_PATH || check2 > MAX_PATH)
 			{
-				printf("error in getting full path, too large or too small.\n");
+				printf("cp: error in getting full path, too large or too small.\n");
 			}
 			if (_wcsicmp(srcFullPath, dstFullPath) == 0) {
 				printf("cp: source and destination are the same file\n");
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 			int full_path_size = (strlen(token) + strlen(argv[2]) + 2);
 			char* full_dest_path = (char*)malloc( full_path_size * sizeof(char) );
 			if (full_dest_path == NULL) {
-				printf("Allocation failed due to full heap (avalible ram memory). fix it!!!!!!!! \n");
+				printf("cp: Allocation failed due to full heap (avalible ram memory). fix it!!!!!!!! \n");
 				fclose(source);
 				return 1;
 			}
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
 			destination = fopen(full_dest_path, "wb");
 			if (destination == NULL) {
 
-				printf("Couldn't open destination file due to an error.\n");
+				printf("cp: Couldn't open destination file due to an error.\n");
 				free(full_dest_path);
 				fclose(source);
 				perror("fopen");
@@ -197,7 +197,7 @@ int main(int argc, char** argv)
 		else {
 			destination = fopen(argv[2], "wb");
 			if (destination == NULL) {
-				printf("Couldn't open destination file due to an error.\n");
+				printf("cp: Couldn't open destination file due to an error.\n");
 				fclose(source);
 				perror("fopen");
 
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 
 			if (n_write < n)
 			{
-				printf("There was a problem in writing into destination file.\n");
+				printf("cp: There was a problem in writing into destination file.\n");
 			}
 
 
