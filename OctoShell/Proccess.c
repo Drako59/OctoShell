@@ -31,6 +31,7 @@ BOOL Open_procces(Command* command ) {
 	STARTUPINFO si;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES;
 	PROCESS_INFORMATION pi;
 	
 	char* path = command->name;
@@ -93,7 +94,12 @@ BOOL Open_procces(Command* command ) {
 	//printf("%ls\n", para);		//DEBUG
 	
 	//Create the procces
-	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, 0, 0, NULL, NULL, &si, &pi);
+	SetHandleInformation(command->stdin_file, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+	SetHandleInformation(command->stdout_file, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+	si.hStdInput = command->stdin_file;
+	si.hStdOutput = command->stdout_file;
+
+	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
 	if (!flag) {
 		//printf("Creating process failed.\n");
 		free(para);

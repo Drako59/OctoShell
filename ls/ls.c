@@ -8,6 +8,7 @@
 #define MAX_PARAMETERS 3
 #define elements_in_a_row 3
 typedef struct CommandParsed {
+	char start_of_hidden_content;
 	char** param;
 	int param_num;
 	int argc;
@@ -64,6 +65,7 @@ char* utf16_to_utf8(const wchar_t* w)
 
 BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 	command->argc = 0;
+	command->start_of_hidden_content = L'.';
 	command->param_num = 0;
 	command->argv = (char**)malloc((argc + 1)* sizeof(char*));
 	command->param = (char**)malloc((argc + 1) * sizeof(char*));
@@ -78,7 +80,7 @@ BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 	}
 	
 	for (int i = 1; i < argc; i++) {
-		if (argv[i ][0] == '-') {
+		if (argv[i ][0] == '-' && (strlen(argv[i]) > 1)) {
 			command->param[command->param_num] = argv[i ];
 			command->param_num++;
 		}
@@ -118,7 +120,7 @@ char* parameter_as_string(char** para, int size) {
 	//printf("%d", size);//DEBUG
 	//printf("%s", para[0]); //DEBUG
 	for (int i = 0; i < size; i++) {
-		length += strlen(para[i]) ;
+		length += strlen(para[i]) - 1 ;
 	}
 
 	char* para_str = (char*)malloc(sizeof(char) * length);
@@ -137,7 +139,12 @@ char* parameter_as_string(char** para, int size) {
 
 }
 
-BOOL Default_ls(CommandParsed* command , char* start_of_hidden_content) {
+char* ls_build_pattern(const char* input) {
+	return NULL;
+}
+
+BOOL Default_ls(CommandParsed* command) {
+	//NOTE: caller must provide pattern(add \ * for directories)
 	char* sep = "\n";
 	int i = 1;
 
@@ -156,18 +163,19 @@ BOOL Default_ls(CommandParsed* command , char* start_of_hidden_content) {
 
 	if (hSearch == INVALID_HANDLE_VALUE) {
 		fputs("There is no file found for this\n", stdout);
+		return FALSE;
 	}
-	if (fileData.cFileName[0] != start_of_hidden_content) {
+	if (fileData.cFileName[0] != command->start_of_hidden_content) {
 		if (!fputsUTF16(fileData.cFileName)) return FALSE;
 	}
 	memset(&fileData, 0, sizeof(fileData));
 	while (FindNextFileW(hSearch, &fileData)) {
 		//sep = i % elements_in_a_row == 0 ? "\n" : "\t\t";
-		if (fileData.cFileName[0] != start_of_hidden_content) {
+		if (fileData.cFileName[0] != command->start_of_hidden_content) {
 			if (!fputsUTF16(fileData.cFileName)) return FALSE;
 			fputs(sep, stdout);
 		}
-		memset(&fileData, 0, sizeof(fileData));
+		//memset(&fileData, 0, sizeof(fileData));
 		i++;
 	}
 	fputs("\n", stdout);
@@ -196,7 +204,6 @@ int main(int argc, char** argv)
 	int i = 1;
 	char* sep = "\n";
 	
-	char start_of_hidden_content = L'.';
 
 
 	char* united_para_str = parameter_as_string(command.param, command.param_num );
@@ -206,11 +213,11 @@ int main(int argc, char** argv)
 	if (united_para_str != NULL && (strchr(united_para_str, "a") == 0)) {
 		//printf("%d",command.param_num	);//DEBUG
 		command.param_num--;
-		start_of_hidden_content = L' ';
+		command.start_of_hidden_content = L' ';
 	}
 
 	if(command.param_num == 0){
-		if (Default_ls(&command, start_of_hidden_content) == NULL) {
+		if (Default_ls(&command) == NULL) {
 			return 1;
 		}
 		//if (command.argc == 0) {
