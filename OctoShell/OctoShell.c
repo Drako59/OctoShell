@@ -4,13 +4,63 @@
 
 #include "includes.h"
 
+#define ESC "\x1b"
+
 //typedef struct DirectoryNode {
 //	const wchar_t* name;
 //	struct DirectoryNode* next;
 //
 //} DirectoryNode;
 
-
+void printOctopus() {
+//	printf(  
+//"                         _,--._\n"
+//"                      ,'      `.\n"
+//"              |\\     / ,-.  ,-. \\     /|\n"
+//"              )o),/ ( ( o )( o ) ) \\.(o(\n"
+//"             /o/// /|  `-'  `-'  |\\ \\\\\\o\\\n"
+//"            / / |\\ \\(   .    ,   )/ /| \\ \\\n"
+//"            | | \\o`-/    `\\/'    \\-'o/ | |\n"
+//"            \\ \\  `,'              `.'  / /\n"
+//"         \\.  \\ `-'  ,'|   /\\   |`.  `-' /  ,/\n"
+//"          \\`. `.__,' /   /  \\   \\ `.__,' ,'/\n"
+//"           \\o\\     ,'  ,'    `.  `.     /o/\n"
+//"            \\o`---'  ,'        `.  `---'o/\n"
+//"             `.____,'  -OctoShell  `.____,'\n"
+//);
+//printf(
+//		"                                 __,,----.__\n"
+//		"                            __,,'            ``.\n"
+//		"                      ||\\\\       //  ,--.    ,--.   \\\\       //||\n"
+//		"                      ))oo)),,  ((  ((  oo ))((  oo ))  ))  ,,((oo((\n"
+//		"                     //oo////  ||  ``--''    ``--''    ||  \\\\\\\\oo\\\\\n"
+//		"                   //  // ||\\\\  ((    ..        ,,    ))  //||  \\\\  \\\\\n"
+//		"                   ||  ||  \\\\oo``--    ``\\\\//''      --''oo//  ||  ||\n"
+//		"                   \\\\  \\\\    ``,,                      ``,,    //  //\n"
+//		"              \\\\.      \\\\    ``--    ,,||        /\\\\        ||,,    --''    //      ,,\n"
+//		"                \\\\``..    ``____,,    //        //  \\\\        \\\\    ,,____''    ..''//\n"
+//		"                  \\\\oo\\\\        ,,    ,,        ``..        ,,    ,,        //oo//\n"
+//		"                    \\\\oo``------''      ,,                ,,      ``------''oo//\n"
+//		"                      ``______,,            --OctoShell            ,,______''\n");
+printf(
+	ESC "[1;31m"   /* purple */
+	"				    __,,----.__\n"
+	"			         __,,'            ``.\n"
+	"                      ||\\\\       //  ,--.    ,--.   \\\\       //||\n"
+	"                      ))oo)),,  ((  ((  oo ))((  oo ))  ))  ,,((oo((\n"
+	"                     //oo////  ||  ``--''    ``--''    ||  \\\\\\\\oo\\\\\n"
+	"                   //  // ||\\\\  ((    ..        ,,    ))  //||  \\\\  \\\\\n"
+	"                   ||  ||  \\\\oo``--    ``\\\\//''      --''oo//  ||  ||\n"
+	"                   \\\\  \\\\    ``,,                      ``,,    //  //\n"
+	"              \\\\.      \\\\    ``--    ,,||        /\\\\        ||,,    --''    //      ,,\n"
+	"                \\\\``..    ``____,,    //        //  \\\\        \\\\    ,,____''    ..''//\n"
+	"                  \\\\oo\\\\        ,,    ,,        ``..        ,,    ,,        //oo//\n"
+	"                    \\\\oo``------''      ,,                ,,      ``------''oo//\n"
+	ESC "[1;36m"   /* cyan */
+	"                      ``______,,            --OctoShell            ,,______''\n"
+	ESC "[0m"      /* reset */
+);
+}
 
 void printAllocationError(void) {
 	printf("OctoShell: There is no available space in heap. try to upgrade your pc maybe?(pls?) :(\n");
@@ -282,6 +332,9 @@ void Command_init(Command* command, HANDLE hStdInputFile, HANDLE hStdOutFile) {
 
 int main()
 {
+	enable_ansi_colors();
+	//printOctopus();
+	//wprintf(L"Welcome to OctoShell 🐙\n");
 	UINT original_cp = GetConsoleOutputCP(); // Save original code page
 
 	printf("%u \n", original_cp);
@@ -324,8 +377,8 @@ int main()
 	//************************************
 
 	//wprintf(L"<%s>", path);
-	printf("%s:~", path);
-	while (fgets(command_str, COMMAND_MAX_SIZE - 1, stdin)) {
+	printf("%s:~$", path);
+	while (fgets(command_str, COMMAND_MAX_SIZE , stdin)) {
 		
 		//Set the redirections
 		Command_init(&command,hStdInputFile,hStdOutFile);
@@ -341,7 +394,7 @@ int main()
 		
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			printf("Invalid Command\n");
-			printf("%s:~", path);
+			printf("%s:~$", path);
 			continue;
 		}
 
@@ -389,7 +442,7 @@ int main()
 		//wprintf(L"Command: %s\n", command);
 
 		
-		printf("%s:~", path);
+		printf("%s:~$", path);
 
 	}
 	

@@ -96,6 +96,8 @@ int main(int argc, char** argv)
 
 		uni_source = utf8_to_utf16(argv[1]);
 		DWORD path_point = GetFileAttributesW(uni_source);
+
+		//change to FindFirstFile
 		if (path_point == (path_point & FILE_ATTRIBUTE_DIRECTORY) || path_point == INVALID_FILE_ATTRIBUTES)
 		{
 			printf("cd: Need a legal path to an existing file.\n");

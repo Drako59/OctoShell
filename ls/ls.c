@@ -3,7 +3,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <Windows.h>
-
+#include <ctype.h>
 
 #define MAX_PARAMETERS 3
 #define elements_in_a_row 3
@@ -13,6 +13,7 @@ typedef struct CommandParsed {
 	int param_num;
 	int argc;
 	char** argv;
+	BOOL	long_details;
 } CommandParsed;
 
 void printAllocError(void) {
@@ -65,6 +66,7 @@ char* utf16_to_utf8(const wchar_t* w)
 
 BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 	command->argc = 0;
+	command->long_details = FALSE;
 	command->start_of_hidden_content = L'.';
 	command->param_num = 0;
 	command->argv = (char**)malloc((argc + 1)* sizeof(char*));
@@ -132,7 +134,7 @@ char* parameter_as_string(char** para, int size) {
 
 	strcpy(para_str, &(para[0][1]));
 	for (int i = 1; i < size; i++) {
-		strcat(para_str, &(para[0][1]));
+		strcat(para_str, &(para[i][1]));
 	}
 
 	return para_str;
@@ -141,6 +143,19 @@ char* parameter_as_string(char** para, int size) {
 
 char* ls_build_pattern(const char* input) {
 	return NULL;
+}
+
+void print_full_file_details(WIN32_FIND_DATAW fileData) {
+	char* file_name = utf16_to_utf8(fileData.cFileName);
+	FILETIME fileTime = fileData.ftLastWriteTime;
+	SYSTEMTIME sysTime;
+	FileTimeToSystemTime(&fileTime, &sysTime);
+
+	printf("xxxxxxxxxx\tx\tgroup\tuser\tsize\t%04d\t%02d\t%02d\t%02d:%02d\t\t%s\n",sysTime.wYear, sysTime.wMonth, sysTime.wDay , sysTime.wHour, sysTime.wMinute, file_name ); // xxxxxxxxxx x group user size year motnh day hour filename
+
+
+	free(file_name);
+
 }
 
 BOOL Default_ls(CommandParsed* command) {
@@ -171,15 +186,21 @@ BOOL Default_ls(CommandParsed* command) {
 	memset(&fileData, 0, sizeof(fileData));
 	while (FindNextFileW(hSearch, &fileData)) {
 		//sep = i % elements_in_a_row == 0 ? "\n" : "\t\t";
+		
 		if (fileData.cFileName[0] != command->start_of_hidden_content) {
-			if (!fputsUTF16(fileData.cFileName)) return FALSE;
-			fputs(sep, stdout);
+			if (command->long_details) {
+				print_full_file_details(fileData);
+			}
+			else {
+				if (!fputsUTF16(fileData.cFileName)) return FALSE;
+				fputs(sep, stdout);
+			}
 		}
 		//memset(&fileData, 0, sizeof(fileData));
 		i++;
 	}
 	fputs("\n", stdout);
-
+	return TRUE;
 }
 
 int main(int argc, char** argv)
@@ -187,9 +208,9 @@ int main(int argc, char** argv)
 	/*argv = (char*)malloc(sizeof(char*) * 3);
 	argc = 1;
 	argv[0] = "test";*/
-	/*argv = (char**)malloc(sizeof(char*) * 2); //DEBUG
-	argv[0] = "test";
-	argv[1] = "-a";*/
+	//argv = (char**)malloc(sizeof(char*) * 2); //DEBUG
+	//argv[0] = "test";
+	//argv[1] = "-a";
 	//argc = 2;//DEBUG
 	char* utf8_filename;
 	HANDLE hSearch;
@@ -210,13 +231,19 @@ int main(int argc, char** argv)
 		
 	//printf("%s\n", united_para_str);
 	
-	if (united_para_str != NULL && (strchr(united_para_str, "a") == 0)) {
+	if (united_para_str != NULL && ((strchr(united_para_str, 'a') != NULL) || (strchr(united_para_str, 'A') != NULL))) {
 		//printf("%d",command.param_num	);//DEBUG
 		command.param_num--;
 		command.start_of_hidden_content = L' ';
 	}
+	if (united_para_str != NULL && ((strchr(united_para_str, 'l') != NULL) || (strchr(united_para_str, 'L') != NULL))) {
+		//printf("%d",command.param_num	);//DEBUG
+		printf("Premissions\tx\tGroup\tUser\tSize\tYear\tMonth\tDay\tHour:Min\tfilename\n----------------------------------------------------------------------------------------------------\n");
+		command.long_details = TRUE;
+		
+	}
 
-	if(command.param_num == 0){
+	//if(command.param_num == 0){
 		if (Default_ls(&command) == NULL) {
 			return 1;
 		}
@@ -246,7 +273,7 @@ int main(int argc, char** argv)
 		//	i++;
 		//}
 		//fputs("\n", stdout);
-	}
+	//}
 
 	if (united_para_str != NULL)
 		free(united_para_str);

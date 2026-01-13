@@ -5,6 +5,8 @@
 #define MAX_PATH_SIZE 256
 #define COMMAND_MAX_SIZE 256
 
+
+
 typedef struct Command {
 	char* name;
 	int argc;
@@ -40,4 +42,18 @@ typedef struct DirectoryNode {
 extern char* path;
 extern DirectoryNode* start_path;
 extern DirectoryNode* path_pointer;
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
+static void enable_ansi_colors(void) {
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hOut == INVALID_HANDLE_VALUE) return;
+
+	DWORD mode = 0;
+	if (!GetConsoleMode(hOut, &mode)) return;
+
+	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	SetConsoleMode(hOut, mode);
+}
 #endif
