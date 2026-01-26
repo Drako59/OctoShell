@@ -100,6 +100,7 @@ wchar_t* utf8_to_utf16(const char* s)
 	return w; 
 }
 
+//free the memeory that was allcoated the nodes of the path and the allocated memeory for it's content.
 void freePathNode(DirectoryNode* pointer) {
 	DirectoryNode* before_node;
 	//printf("Here");
@@ -117,6 +118,7 @@ void freePathNode(DirectoryNode* pointer) {
 	
 }
 
+//return the size required to create the path.
 int size_of_path(DirectoryNode* start) 
 {
 	int size = 0;
@@ -146,7 +148,7 @@ BOOL StrHeapCpy(char** pDst,char* pSrc) {
 }
 
 
-
+//return a char* to a path created according to the node who represents the file system.
 char* CreatePath(DirectoryNode* start ) {
 
 
@@ -171,6 +173,8 @@ char* CreatePath(DirectoryNode* start ) {
 //	HANDLE file = 
 //}
 
+
+//create a copy of the command structure. (deepcopy only the name).
 Command* CopyCommand(Command* command) {
 	Command* command_copy = (Command*)malloc(sizeof(Command) * 1);
 

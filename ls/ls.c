@@ -14,6 +14,7 @@ typedef struct CommandParsed {
 	int argc;
 	char** argv;
 	BOOL	long_details;
+	BOOL Only_dict;
 } CommandParsed;
 
 void printAllocError(void) {
@@ -132,7 +133,7 @@ char* parameter_as_string(char** para, int size) {
 		return NULL;
 	}
 
-	strcpy(para_str, &(para[0][1]));
+	strcpy(para_str, &(para[0][1])); //copy the whole string without the - that indicats parameters
 	for (int i = 1; i < size; i++) {
 		strcat(para_str, &(para[i][1]));
 	}
@@ -180,9 +181,14 @@ BOOL Default_ls(CommandParsed* command) {
 		fputs("There is no file found for this\n", stdout);
 		return FALSE;
 	}
-	if (fileData.cFileName[0] != command->start_of_hidden_content) {
+	if (fileData.cFileName[0] != command->start_of_hidden_content && command->long_details) {
+		print_full_file_details(fileData);
+
+	}
+	else if (fileData.cFileName[0] != command->start_of_hidden_content) {
 		if (!fputsUTF16(fileData.cFileName)) return FALSE;
 	}
+
 	memset(&fileData, 0, sizeof(fileData));
 	while (FindNextFileW(hSearch, &fileData)) {
 		//sep = i % elements_in_a_row == 0 ? "\n" : "\t\t";
