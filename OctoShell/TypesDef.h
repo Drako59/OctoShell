@@ -20,13 +20,19 @@ typedef struct Command {
 
 #endif
 
+#ifndef STRING
+#define STRING
+typedef char* string;
+#endif
+
+
 
 #ifndef STRING_UNION
 #define STRING_UNION
-typedef union string {
+typedef union UString {
 	char* utf8;
 	wchar_t* unicode;
-} string;
+} UString;
 
 #endif
 #ifndef PATH_POINTER

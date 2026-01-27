@@ -209,6 +209,88 @@ void FreeStrArr(char** arr, int argc) {
 
 }
 
+BOOL SetRedirectOUT(char* fileName, Command* command) {
+	wchar_t*  unicode_transfer = utf8_to_utf16(fileName);
+	HANDLE outFile = CreateFileW(unicode_transfer, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(unicode_transfer);
+	if (outFile == NULL || outFile == INVALID_HANDLE_VALUE)
+	{
+		printf("There was an error opening th file.\n");
+		FreeStrArr(command->argv, command->argc);
+		free(command->name);
+		return NULL;
+	}
+	command->stdout_file = outFile;
+	command->redirect_out = TRUE;
+}
+
+BOOL CheckForQuote(char* command_str, char sep) {
+	int QuoteCounts = 0; 
+	for (int i = 0; i < strlen(command_str); i++) {
+		if (command_str[i] == sep) QuoteCounts++;
+	}
+
+	return QuoteCounts / 2;
+}
+
+
+//to upgrade
+enum QState {
+	QNone,
+	QDouble,
+	QSingle
+};
+
+
+
+
+char* strtokCommand(char* command_str, char* sep) {
+	/*BOOL insideQuote = CheckForQuote(command_str, '\'');
+	BOOL insideDoubleQuote = CheckForQuote(command_str, '"');*/
+
+	BOOL insideQuote =FALSE;
+	BOOL insideDoubleQuote = FALSE;
+	static char* command = NULL;
+	if (command_str != NULL)
+		command = command_str;
+	char* copyCommand;
+	if (command != NULL) {
+		for (int i = 0; i < strlen(command); i++) {
+			if (!insideQuote && command[i] == '"' && !insideDoubleQuote)
+				insideDoubleQuote = TRUE;
+			else if (!insideQuote && command[i] == '"' && insideDoubleQuote) {
+				insideDoubleQuote = FALSE;
+
+			}
+			if (!insideDoubleQuote && command[i] == '\'' && !insideQuote)
+				insideQuote = TRUE;
+			else if (!insideDoubleQuote && command[i] == '\'' && insideQuote) {
+				insideQuote = FALSE;
+
+			}
+			if (strchr(sep, command[i]) && !insideDoubleQuote && !insideQuote) {
+				command[i] = '\0';
+				copyCommand = command;
+				command = &(command[i + 1]);
+				return copyCommand;
+			}
+		}
+
+		if (insideDoubleQuote || insideQuote) {
+			printf("OctoShell: There is must be a matching quote in a parsed string.");
+			command = NULL;
+			return NULL;
+		}
+
+		copyCommand = command;
+		command = NULL;
+		return copyCommand;
+	}
+	return NULL;
+	
+
+}
+
 Command* SepIntoCommand(char* command_str, Command* command) { //to choose if return a command obj or to pass one
 	char* ptr = NULL;
 	char* cmd;
@@ -220,39 +302,32 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 	char* sep = " ";
 	char* tok;
 	//seperate into tokens and 
-	tok = strtok(command_str, sep);
+	tok = strtokCommand(command_str, sep);
 	if (!tok) return NULL;
 	cmd = tok;
 	command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
 	strcpy(command->name, cmd);
-	//wprintf(L"commandName->%s", command.name); //DEBUG
-	tok = strtok(NULL, sep);
+	//printf("commandName->%s", command->name); //DEBUG
+	tok = strtokCommand(NULL, sep);
 	//create a command obj
+
+
+	//parsing into the command.
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
 		if (strncmp(tok, ">", COMMAND_MAX_SIZE) == 0 ) {
-			tok = strtok(NULL, sep);
+			tok = strtokCommand(NULL, sep);
 			if (tok == NULL)
 				break;
-			unicode_transfer = utf8_to_utf16(tok);
-			outFile = CreateFileW(unicode_transfer, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-			free(unicode_transfer);
-			if (outFile == NULL || outFile == INVALID_HANDLE_VALUE)
-			{
-				printf("There was an error opening th file.\n");
-				FreeStrArr(command->argv, command->argc);
-				free(command->name);
-				return NULL;
-			}
-			command->stdout_file = outFile;
-			command->redirect_out = TRUE;
-			tok = strtok(NULL, sep);
+			if (SetRedirectOUT(tok, command) == NULL) return NULL;
+			tok = strtokCommand(NULL, sep);
 			continue;
 		}
 		command->argv[argc] = (char*)malloc(sizeof(char) * (strlen(tok) + 2));
-		//wprintf(L"argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command.argv[argc]); //DEBUG
+		//printf("argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command->argv[argc]); //DEBUG
+		//printf("tok->%s", tok); //DEBUG
 		strcpy(command->argv[argc], tok);
 		argc++;
-		tok = strtok(NULL, sep);
+		tok = strtokCommand(NULL, sep);
 
 	}
 

@@ -6,6 +6,10 @@ BOOL echo(Command* command) {
 	char* buffer;
 	int size = 0, written = 0;
 
+	if (command->argc < 1) {
+		printf("\n");
+		return TRUE;
+	}
 
 	for (int i = 0; i < command->argc; i++) {
 		//printf("here");
@@ -17,7 +21,7 @@ BOOL echo(Command* command) {
 	if (buffer == NULL)
 		return FALSE;
 	strncpy(buffer, command->argv[0], size);
-		
+	
 
 	for (int i = 1; i < command->argc; i++) {
 		strcat(buffer, " ");

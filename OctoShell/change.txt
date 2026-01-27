@@ -30,7 +30,3 @@ text_test.txt
 TypesDef.h
 x64
 
-st.txt
-TypesDef.h
-x64
-
