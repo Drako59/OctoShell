@@ -68,13 +68,6 @@ char* utf16_to_utf8(const wchar_t* w)
 	return s;
 }
 
-//BOOL printTxt() {
-//
-//}
-//BOOL printFile() {
-//
-//}
-
 
 //NOTE!!!! CHANE TO BYTE!!!!!
 
@@ -134,8 +127,7 @@ char* ParameterAsString(char** para, int size) {
 
 	if (size == 0) return NULL;
 	int length = 1;
-	//printf("%d", size);//DEBUG
-	//printf("%s", para[0]); //DEBUG
+	
 	for (int i = 0; i < size; i++) {
 		length += strlen(para[i]) - 1;
 	}
@@ -186,10 +178,10 @@ int main(int argc, char** argv)
 
 
 	char* parametersString = ParameterAsString(command.param, command.param_num);
-	printf("%s", parametersString);
+	//printf("paraStr->%s\n", parametersString);
 
 	if (parametersString != NULL) {
-		if (strchr(parametersString, 'a') == 0 || strchr(parametersString, 'A')) {
+		if (strchr(parametersString, 'a') != NULL || strchr(parametersString, 'A') != NULL) {
 			command.PrintAll = TRUE;
 		}
 	}
@@ -202,12 +194,7 @@ int main(int argc, char** argv)
 
 
 	for (int i = 0; i < command.argc; i++) {
-		//printf("%s", command.argv[i]);//DEBUG
-		//printf("fisrt-char->%c last-char->%c %s",  command.argv[i][0],command.argv[i][strlen(command.argv[i] - 1)], command.argv[i]); //DEBUG
-		//if ((command.argv[i][0] == '"' && command.argv[i][strlen(command.argv[i] - 1)] == '"') || ((command.argv[i][0] == '\'' && command.argv[i][strlen(command.argv[i] - 1)] == '\''))) {
-		//	files[i] = NULL;
-		//}
-		//else {
+		
 		files[i] = fopen(command.argv[i], "rb");
 		if (files[i] == NULL) {
 			printf("cat: Error occured while opening %s\n", command.argv[i]);
@@ -215,28 +202,24 @@ int main(int argc, char** argv)
 			freeFiles(files, i);
 			return 1;
 		}
-		//}
 
 	}
 
 	char buffer[BUFFER_SIZE];
 	int bytesRead;
-	int counter = command.argc;
+	int counter = 0;
 	char input[MAX_COMMAND_SIZE];
 	for (int i = 0; i < command.argc; i++) {
-		//printf("here"); //DEBUG
 		if (files[i] != NULL)
 		{
 			//counter = 0;
 			while ((bytesRead = fread(buffer, sizeof(char), BUFFER_SIZE, files[i])) > 0) {
-				//printf("%s", buffer); //DEBUG
 				fwrite(buffer, sizeof(char), bytesRead, stdout);
 
 				if (counter == 2 && !command.PrintAll && bytesRead == BUFFER_SIZE) {
 					printf("\ncat: want to contiune? (y/n): ");
 					fgets(input, MAX_COMMAND_SIZE, stdin);
 
-					//printf("%d", strlen(input));
 					if (strlen(input) != 2 || (input[0] != 'y' && input[0] && 'n')) {
 						printf("cat: Enter a valid argument (y/n)\n");
 						freeFiles(files, command.argc);

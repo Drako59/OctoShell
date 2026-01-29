@@ -169,9 +169,7 @@ char* CreatePath(DirectoryNode* start) {
 	return path;
 }
 
-//HANDLE OpenFileWinApi() {
-//	HANDLE file = 
-//}
+
 
 
 //create a copy of the command structure. (deepcopy only the name).
@@ -245,8 +243,7 @@ enum QState {
 
 
 char* strtokCommand(char* command_str, char* sep) {
-	/*BOOL insideQuote = CheckForQuote(command_str, '\'');
-	BOOL insideDoubleQuote = CheckForQuote(command_str, '"');*/
+	
 
 	BOOL insideQuote = FALSE;
 	BOOL insideDoubleQuote = FALSE;
@@ -373,7 +370,7 @@ DirectoryNode* start_path;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
 char command_str[COMMAND_MAX_SIZE];
-char* function_bin = "C:\\Users\\ayele\\source\\repos\\OctoShell\\x64\\Func_Bin\\";
+char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Func_Bin\\";
 char* path;
 //--------------------------------------------------------------------------------------------------------------------------------------
 //function that uses the global varibals
@@ -412,8 +409,8 @@ void Command_init(Command* command, HANDLE hStdInputFile, HANDLE hStdOutFile) {
 int main()
 {
 	enable_ansi_colors();
-	//printOctopus();
-	//wprintf(L"Welcome to OctoShell 🐙\n");
+	printOctopus();
+	wprintf(L"Welcome to OctoShell 🐙\n");
 	UINT original_cp = GetConsoleOutputCP(); // Save original code page
 
 	printf("%u \n", original_cp);
@@ -429,12 +426,10 @@ int main()
 		return 1;
 	}
 	BOOL func_match_flag = FALSE;
-	//print_matrix(argv, argc);
 
 	Command command;
 	Command* cmd_pointer;
 	cmd_pointer = &command;
-	//wchar_t** argv;
 	int len;
 	start_path = (DirectoryNode*)malloc(sizeof(DirectoryNode));
 	start_path->name = (char*)malloc(sizeof(char) * 3);
@@ -445,8 +440,8 @@ int main()
 
 	//const wchar_t* path_const = path;
 	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
-	const wchar_t* path_constW = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell\\tests_folder";
-	const char* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell\\tests_folder";
+	const wchar_t* path_constW = L"C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\OctoShell\\tests_folder";
+	const char* path_const = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\OctoShell\\tests_folder";
 
 	//set the default path: 
 
@@ -520,7 +515,6 @@ int main()
 
 		ExitFree(&command);
 
-		//wprintf(L"Command: %s\n", command);
 
 
 		printf("%s:~$", path);

@@ -120,8 +120,7 @@ char* parameter_as_string(char** para, int size) {
 
 	if (size == 0) return NULL;
 	int length = 1;
-	//printf("%d", size);//DEBUG
-	//printf("%s", para[0]); //DEBUG
+	
 	for (int i = 0; i < size; i++) {
 		length += strlen(para[i]) - 1;
 	}
@@ -235,56 +234,26 @@ int main(int argc, char** argv)
 
 	char* united_para_str = parameter_as_string(command.param, command.param_num);
 
-	//printf("%s\n", united_para_str);
 
 	if (united_para_str != NULL && ((strchr(united_para_str, 'a') != NULL) || (strchr(united_para_str, 'A') != NULL))) {
-		//printf("%d",command.param_num	);//DEBUG
 		command.param_num--;
 		command.start_of_hidden_content = L' ';
 	}
 	if (united_para_str != NULL && ((strchr(united_para_str, 'l') != NULL) || (strchr(united_para_str, 'L') != NULL))) {
-		//printf("%d",command.param_num	);//DEBUG
 		printf("Premissions\tx\tGroup\tUser\tSize\tYear\tMonth\tDay\tHour:Min\tfilename\n----------------------------------------------------------------------------------------------------\n");
 		command.long_details = TRUE;
 
 	}
 
-	//if(command.param_num == 0){
 	if (Default_ls(&command) == NULL) {
 		return 1;
 	}
-	//if (command.argc == 0) {
-	//	hSearch = FindFirstFileW(L"*", &fileData);
-	//}
-	//else {
-	//	wchar_t* WPath = utf8_to_utf16(argv[1]);
-	//	hSearch = FindFirstFileW(WPath, &fileData);
-	//	free(WPath);
-	//}
-	//
-	//if (hSearch == INVALID_HANDLE_VALUE) {
-	//	fputs("There is no file found for this\n", stdout);
-	//}
-	//if (fileData.cFileName[0] != start_of_hidden_content) {
-	//	if (!fputsUTF16(fileData.cFileName)) return 1;
-	//}
-	//memset(&fileData, 0, sizeof(fileData));
-	//while (FindNextFileW(hSearch, &fileData)) {
-	//	//sep = i % elements_in_a_row == 0 ? "\n" : "\t\t";
-	//	if (fileData.cFileName[0] != start_of_hidden_content) {
-	//		if (!fputsUTF16(fileData.cFileName)) return 1;
-	//		fputs(sep, stdout);
-	//	}
-	//	memset(&fileData, 0, sizeof(fileData));
-	//	i++;
-	//}
-	//fputs("\n", stdout);
-//}
+
 
 	if (united_para_str != NULL)
 		free(united_para_str);
 	wchar_t* test_path = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell\\test.txt";
-	//wprintf(L"%s, %s \n", fileData.cFileName, fileData.cAlternateFileName);
+	//wprintf(L"%s, %s \n", fileData.cFileName, fileData.cAlternateFileName);//DEBUG
 
 	return 0;
 }
