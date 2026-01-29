@@ -13,53 +13,53 @@
 //} DirectoryNode;
 
 void printOctopus() {
-//	printf(  
-//"                         _,--._\n"
-//"                      ,'      `.\n"
-//"              |\\     / ,-.  ,-. \\     /|\n"
-//"              )o),/ ( ( o )( o ) ) \\.(o(\n"
-//"             /o/// /|  `-'  `-'  |\\ \\\\\\o\\\n"
-//"            / / |\\ \\(   .    ,   )/ /| \\ \\\n"
-//"            | | \\o`-/    `\\/'    \\-'o/ | |\n"
-//"            \\ \\  `,'              `.'  / /\n"
-//"         \\.  \\ `-'  ,'|   /\\   |`.  `-' /  ,/\n"
-//"          \\`. `.__,' /   /  \\   \\ `.__,' ,'/\n"
-//"           \\o\\     ,'  ,'    `.  `.     /o/\n"
-//"            \\o`---'  ,'        `.  `---'o/\n"
-//"             `.____,'  -OctoShell  `.____,'\n"
-//);
-//printf(
-//		"                                 __,,----.__\n"
-//		"                            __,,'            ``.\n"
-//		"                      ||\\\\       //  ,--.    ,--.   \\\\       //||\n"
-//		"                      ))oo)),,  ((  ((  oo ))((  oo ))  ))  ,,((oo((\n"
-//		"                     //oo////  ||  ``--''    ``--''    ||  \\\\\\\\oo\\\\\n"
-//		"                   //  // ||\\\\  ((    ..        ,,    ))  //||  \\\\  \\\\\n"
-//		"                   ||  ||  \\\\oo``--    ``\\\\//''      --''oo//  ||  ||\n"
-//		"                   \\\\  \\\\    ``,,                      ``,,    //  //\n"
-//		"              \\\\.      \\\\    ``--    ,,||        /\\\\        ||,,    --''    //      ,,\n"
-//		"                \\\\``..    ``____,,    //        //  \\\\        \\\\    ,,____''    ..''//\n"
-//		"                  \\\\oo\\\\        ,,    ,,        ``..        ,,    ,,        //oo//\n"
-//		"                    \\\\oo``------''      ,,                ,,      ``------''oo//\n"
-//		"                      ``______,,            --OctoShell            ,,______''\n");
-printf(
-	ESC "[1;31m"   /* purple */
-	"				    __,,----.__\n"
-	"			         __,,'            ``.\n"
-	"                      ||\\\\       //  ,--.    ,--.   \\\\       //||\n"
-	"                      ))oo)),,  ((  ((  oo ))((  oo ))  ))  ,,((oo((\n"
-	"                     //oo////  ||  ``--''    ``--''    ||  \\\\\\\\oo\\\\\n"
-	"                   //  // ||\\\\  ((    ..        ,,    ))  //||  \\\\  \\\\\n"
-	"                   ||  ||  \\\\oo``--    ``\\\\//''      --''oo//  ||  ||\n"
-	"                   \\\\  \\\\    ``,,                      ``,,    //  //\n"
-	"              \\\\.      \\\\    ``--    ,,||        /\\\\        ||,,    --''    //      ,,\n"
-	"                \\\\``..    ``____,,    //        //  \\\\        \\\\    ,,____''    ..''//\n"
-	"                  \\\\oo\\\\        ,,    ,,        ``..        ,,    ,,        //oo//\n"
-	"                    \\\\oo``------''      ,,                ,,      ``------''oo//\n"
-	ESC "[1;36m"   /* cyan */
-	"                      ``______,,            --OctoShell            ,,______''\n"
-	ESC "[0m"      /* reset */
-);
+	//	printf(  
+	//"                         _,--._\n"
+	//"                      ,'      `.\n"
+	//"              |\\     / ,-.  ,-. \\     /|\n"
+	//"              )o),/ ( ( o )( o ) ) \\.(o(\n"
+	//"             /o/// /|  `-'  `-'  |\\ \\\\\\o\\\n"
+	//"            / / |\\ \\(   .    ,   )/ /| \\ \\\n"
+	//"            | | \\o`-/    `\\/'    \\-'o/ | |\n"
+	//"            \\ \\  `,'              `.'  / /\n"
+	//"         \\.  \\ `-'  ,'|   /\\   |`.  `-' /  ,/\n"
+	//"          \\`. `.__,' /   /  \\   \\ `.__,' ,'/\n"
+	//"           \\o\\     ,'  ,'    `.  `.     /o/\n"
+	//"            \\o`---'  ,'        `.  `---'o/\n"
+	//"             `.____,'  -OctoShell  `.____,'\n"
+	//);
+	//printf(
+	//		"                                 __,,----.__\n"
+	//		"                            __,,'            ``.\n"
+	//		"                      ||\\\\       //  ,--.    ,--.   \\\\       //||\n"
+	//		"                      ))oo)),,  ((  ((  oo ))((  oo ))  ))  ,,((oo((\n"
+	//		"                     //oo////  ||  ``--''    ``--''    ||  \\\\\\\\oo\\\\\n"
+	//		"                   //  // ||\\\\  ((    ..        ,,    ))  //||  \\\\  \\\\\n"
+	//		"                   ||  ||  \\\\oo``--    ``\\\\//''      --''oo//  ||  ||\n"
+	//		"                   \\\\  \\\\    ``,,                      ``,,    //  //\n"
+	//		"              \\\\.      \\\\    ``--    ,,||        /\\\\        ||,,    --''    //      ,,\n"
+	//		"                \\\\``..    ``____,,    //        //  \\\\        \\\\    ,,____''    ..''//\n"
+	//		"                  \\\\oo\\\\        ,,    ,,        ``..        ,,    ,,        //oo//\n"
+	//		"                    \\\\oo``------''      ,,                ,,      ``------''oo//\n"
+	//		"                      ``______,,            --OctoShell            ,,______''\n");
+	printf(
+		ESC "[1;31m"   /* purple */
+		"				    __,,----.__\n"
+		"			         __,,'            ``.\n"
+		"                      ||\\\\       //  ,--.    ,--.   \\\\       //||\n"
+		"                      ))oo)),,  ((  ((  oo ))((  oo ))  ))  ,,((oo((\n"
+		"                     //oo////  ||  ``--''    ``--''    ||  \\\\\\\\oo\\\\\n"
+		"                   //  // ||\\\\  ((    ..        ,,    ))  //||  \\\\  \\\\\n"
+		"                   ||  ||  \\\\oo``--    ``\\\\//''      --''oo//  ||  ||\n"
+		"                   \\\\  \\\\    ``,,                      ``,,    //  //\n"
+		"              \\\\.      \\\\    ``--    ,,||        /\\\\        ||,,    --''    //      ,,\n"
+		"                \\\\``..    ``____,,    //        //  \\\\        \\\\    ,,____''    ..''//\n"
+		"                  \\\\oo\\\\        ,,    ,,        ``..        ,,    ,,        //oo//\n"
+		"                    \\\\oo``------''      ,,                ,,      ``------''oo//\n"
+		ESC "[1;36m"   /* cyan */
+		"                      ``______,,            --OctoShell            ,,______''\n"
+		ESC "[0m"      /* reset */
+	);
 }
 
 void printAllocationError(void) {
@@ -85,7 +85,7 @@ wchar_t* utf8_to_utf16(const char* s)
 {
 	if (!s) return NULL;
 
-	
+
 	int n = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
 	if (n <= 0) return NULL;
 
@@ -97,7 +97,7 @@ wchar_t* utf8_to_utf16(const char* s)
 		return NULL;
 	}
 
-	return w; 
+	return w;
 }
 
 //free the memeory that was allcoated the nodes of the path and the allocated memeory for it's content.
@@ -115,11 +115,11 @@ void freePathNode(DirectoryNode* pointer) {
 	}
 
 
-	
+
 }
 
 //return the size required to create the path.
-int size_of_path(DirectoryNode* start) 
+int size_of_path(DirectoryNode* start)
 {
 	int size = 0;
 	while ((start)) {
@@ -130,7 +130,7 @@ int size_of_path(DirectoryNode* start)
 }
 
 
-BOOL StrHeapCpy(char** pDst,char* pSrc) {
+BOOL StrHeapCpy(char** pDst, char* pSrc) {
 	if (!pSrc) {
 		*pDst = NULL;
 		return TRUE;
@@ -149,23 +149,23 @@ BOOL StrHeapCpy(char** pDst,char* pSrc) {
 
 
 //return a char* to a path created according to the node who represents the file system.
-char* CreatePath(DirectoryNode* start ) {
+char* CreatePath(DirectoryNode* start) {
 
 
 	int size = size_of_path(start);
 	char* path = (char*)malloc(sizeof(char) * size);
 
-	strcpy(path,start->name);
+	strcpy(path, start->name);
 	/*wcscat(path, "\\");*/ //BEFORE
 
 	while (start->next) {
 		start = start->next;
 		strcat(path, "\\");
-		strcat(path,start->name);
+		strcat(path, start->name);
 		//wcscat(path, "\\"); //BEFORE
 
 	}
-	strcat(path, "\\"); 
+	strcat(path, "\\");
 	return path;
 }
 
@@ -182,7 +182,7 @@ Command* CopyCommand(Command* command) {
 		printAllocationError();
 		return NULL;
 	}
-	
+
 	if (StrHeapCpy(&(command_copy->name), command->name) == NULL) {
 		free(command_copy);
 		return NULL;
@@ -210,7 +210,7 @@ void FreeStrArr(char** arr, int argc) {
 }
 
 BOOL SetRedirectOUT(char* fileName, Command* command) {
-	wchar_t*  unicode_transfer = utf8_to_utf16(fileName);
+	wchar_t* unicode_transfer = utf8_to_utf16(fileName);
 	HANDLE outFile = CreateFileW(unicode_transfer, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	free(unicode_transfer);
 	if (outFile == NULL || outFile == INVALID_HANDLE_VALUE)
@@ -225,7 +225,7 @@ BOOL SetRedirectOUT(char* fileName, Command* command) {
 }
 
 BOOL CheckForQuote(char* command_str, char sep) {
-	int QuoteCounts = 0; 
+	int QuoteCounts = 0;
 	for (int i = 0; i < strlen(command_str); i++) {
 		if (command_str[i] == sep) QuoteCounts++;
 	}
@@ -248,7 +248,7 @@ char* strtokCommand(char* command_str, char* sep) {
 	/*BOOL insideQuote = CheckForQuote(command_str, '\'');
 	BOOL insideDoubleQuote = CheckForQuote(command_str, '"');*/
 
-	BOOL insideQuote =FALSE;
+	BOOL insideQuote = FALSE;
 	BOOL insideDoubleQuote = FALSE;
 	static char* command = NULL;
 	if (command_str != NULL)
@@ -287,7 +287,7 @@ char* strtokCommand(char* command_str, char* sep) {
 		return copyCommand;
 	}
 	return NULL;
-	
+
 
 }
 
@@ -297,7 +297,7 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 	int argc = 0;
 	HANDLE outFile;
 	HANDLE inFile;
-	
+
 	wchar_t* unicode_transfer;
 	char* sep = " ";
 	char* tok;
@@ -314,7 +314,7 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 
 	//parsing into the command.
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
-		if (strncmp(tok, ">", COMMAND_MAX_SIZE) == 0 ) {
+		if (strncmp(tok, ">", COMMAND_MAX_SIZE) == 0) {
 			tok = strtokCommand(NULL, sep);
 			if (tok == NULL)
 				break;
@@ -347,7 +347,7 @@ void ExitFree(Command* command) {
 BOOL AddString(char** src, char* dst) {
 	char* p;
 	p = realloc(*src, sizeof(char) * (strlen(*src) + strlen(dst) + 1));
-	if (*src == NULL){
+	if (*src == NULL) {
 		printAllocationError();
 		return FALSE;
 	}
@@ -365,10 +365,10 @@ BOOL AddString(char** src, char* dst) {
 
 
 
-BOOL(*func_arr[])(Command*) = {cd, pwd, echo,clear};
-char* funcs_name[] = {"cd","pwd", "echo","clear"};
-char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR"};
-DirectoryNode* start_path;  
+BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear };
+char* funcs_name[] = { "cd","pwd", "echo","clear" };
+char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR" };
+DirectoryNode* start_path;
 
 DirectoryNode* path_pointer;
 DirectoryNode* before;
@@ -421,7 +421,7 @@ int main()
 
 	HANDLE hStdOutFile = GetStdHandle(STD_OUTPUT_HANDLE);
 	HANDLE hStdInputFile = GetStdHandle(STD_INPUT_HANDLE);
-	if ( hStdOutFile == INVALID_HANDLE_VALUE || hStdOutFile == NULL ||
+	if (hStdOutFile == INVALID_HANDLE_VALUE || hStdOutFile == NULL ||
 		hStdInputFile == INVALID_HANDLE_VALUE || hStdInputFile == NULL) {
 		DWORD e1 = GetLastError();
 		printf("hOut=%p lastErr1=%lu \n", hStdOutFile, e1);
@@ -430,7 +430,7 @@ int main()
 	}
 	BOOL func_match_flag = FALSE;
 	//print_matrix(argv, argc);
-	
+
 	Command command;
 	Command* cmd_pointer;
 	cmd_pointer = &command;
@@ -438,15 +438,15 @@ int main()
 	int len;
 	start_path = (DirectoryNode*)malloc(sizeof(DirectoryNode));
 	start_path->name = (char*)malloc(sizeof(char) * 3);
-	strcpy(start_path->name,  "C:");
+	strcpy(start_path->name, "C:");
 	start_path->next = NULL;
 	path_pointer = start_path;
 
 
 	//const wchar_t* path_const = path;
 	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
-	const wchar_t* path_constW = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
-	const char* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell";
+	const wchar_t* path_constW = L"C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell\\tests_folder";
+	const char* path_const = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell\\tests_folder";
 
 	//set the default path: 
 
@@ -457,20 +457,20 @@ int main()
 
 	//wprintf(L"<%s>", path);
 	printf("%s:~$", path);
-	while (fgets(command_str, COMMAND_MAX_SIZE , stdin)) {
-		
+	while (fgets(command_str, COMMAND_MAX_SIZE, stdin)) {
+
 		//Set the redirections
-		Command_init(&command,hStdInputFile,hStdOutFile);
+		Command_init(&command, hStdInputFile, hStdOutFile);
 		func_match_flag = FALSE;
-		
+
 		len = strlen(command_str);
 		if (len > 0 && command_str[len - 1] == '\n')
 			command_str[len - 1] = L'\0';
 
 		//Remove the additional char fromthe command
-		if (strcmp(command_str, "Exit()") == 0	|| strcmp(command_str, "exit") == 0 || strcmp(command_str, "EXIT") == 0 || strcmp(command_str, "exit") == 0)
+		if (strcmp(command_str, "Exit()") == 0 || strcmp(command_str, "exit") == 0 || strcmp(command_str, "EXIT") == 0 || strcmp(command_str, "exit") == 0)
 			break;
-		
+
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			printf("Invalid Command\n");
 			printf("%s:~$", path);
@@ -482,7 +482,7 @@ int main()
 		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
 			if (strcmp(funcs_name[i], command.name) == 0 || strcmp(funcs_name_cap[i], command.name) == 0) {
 				//command.argv = &(command.argv[1]);
-				
+
 				if (func_arr[i](&command) == FALSE)
 				{
 					printf("There was a problem in function process.\n");
@@ -491,11 +491,13 @@ int main()
 				break;
 			}
 		}
-		
+
 		if (!func_match_flag) {
-			
+
 			Command* binCommand = BinCommand(&command);
 			//printf("%s\n", binCommand->name);
+			//printf("BinCommand->argv[i]->%s", binCommand->argv[0]);
+
 			if (binCommand == NULL)
 			{
 				ExitFree(&command);
@@ -504,11 +506,11 @@ int main()
 			if (Open_procces(binCommand)) {
 				printf("");
 			}
-			else if(!Open_procces(&command))
+			else if (!Open_procces(&command))
 				printf("Creating process failed.\n");
 			free(binCommand->name);
 			free(binCommand);
-				
+
 		}
 
 
@@ -520,12 +522,12 @@ int main()
 
 		//wprintf(L"Command: %s\n", command);
 
-		
+
 		printf("%s:~$", path);
 
 	}
-	
-	EXIT:
+
+EXIT:
 	freePathNode(start_path);
 
 	printf("success");
@@ -533,4 +535,3 @@ int main()
 	return 0;
 
 }
-

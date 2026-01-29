@@ -7,12 +7,17 @@
 #include <stdio.h>
 #include <Windows.h>
 #include <ctype.h>
+
+#define MAX_COMMAND_SIZE 256
+#define BUFFER_SIZE 1024
+
 //shared function and types
 typedef struct CommandParsed {
 	char** param;
 	int param_num;
 	int argc;
 	char** argv;
+	BOOL PrintAll;
 } CommandParsed;
 
 void printAllocError(void) {
@@ -63,6 +68,16 @@ char* utf16_to_utf8(const wchar_t* w)
 	return s;
 }
 
+//BOOL printTxt() {
+//
+//}
+//BOOL printFile() {
+//
+//}
+
+
+//NOTE!!!! CHANE TO BYTE!!!!!
+
 
 //initilized the command structure with the arguments and parameters (remove the first value of argv because it is the path)
 BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
@@ -70,6 +85,7 @@ BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 	command->param_num = 0;
 	command->argv = (char**)malloc((argc + 1) * sizeof(char*));
 	command->param = (char**)malloc((argc + 1) * sizeof(char*));
+	command->PrintAll = FALSE;
 	if (command->argv == NULL || command->param == NULL)
 	{
 		printAllocError();
@@ -114,7 +130,7 @@ BOOL fputsUTF16(wchar_t* w) {
 
 }
 
-char* parameter_as_string(char** para, int size) {
+char* ParameterAsString(char** para, int size) {
 
 	if (size == 0) return NULL;
 	int length = 1;
@@ -143,7 +159,8 @@ char* parameter_as_string(char** para, int size) {
 
 void freeFiles(FILE** files, int argc) {
 	for (int i = 1; i < argc; i++) {
-		fclose(files[i]);
+		if (files[i] != NULL)
+			fclose(files[i]);
 	}
 	free(files);
 }
@@ -156,13 +173,26 @@ int main(int argc, char** argv)
 	argv = (char**)malloc(2 * sizeof(char*));
 
 	argv[1] = "C:\\Users\\ayele\\source\\repos\\OctoShell\\OctoShell\\text_test.txt";
-	printf("%s", argv[1]);*/
+	printf("%s\n", argv[1]);*/
 	//END DEBUG********************************************************************************
 
-	
+	//printf("%s\n", argv[1]);
 
 	CommandParsed command;
-	CommandParser_init(&command,argc, argv);
+
+
+
+	CommandParser_init(&command, argc, argv);
+
+
+	char* parametersString = ParameterAsString(command.param, command.param_num);
+	printf("%s", parametersString);
+
+	if (parametersString != NULL) {
+		if (strchr(parametersString, 'a') == 0 || strchr(parametersString, 'A')) {
+			command.PrintAll = TRUE;
+		}
+	}
 
 	FILE** files = (FILE**)malloc((argc - 1) * sizeof(FILE*));
 	if (files == NULL) {
@@ -173,29 +203,65 @@ int main(int argc, char** argv)
 
 	for (int i = 0; i < command.argc; i++) {
 		//printf("%s", command.argv[i]);//DEBUG
-		files[i] = fopen(command.argv[i], "r");
+		//printf("fisrt-char->%c last-char->%c %s",  command.argv[i][0],command.argv[i][strlen(command.argv[i] - 1)], command.argv[i]); //DEBUG
+		//if ((command.argv[i][0] == '"' && command.argv[i][strlen(command.argv[i] - 1)] == '"') || ((command.argv[i][0] == '\'' && command.argv[i][strlen(command.argv[i] - 1)] == '\''))) {
+		//	files[i] = NULL;
+		//}
+		//else {
+		files[i] = fopen(command.argv[i], "rb");
 		if (files[i] == NULL) {
 			printf("cat: Error occured while opening %s\n", command.argv[i]);
 			perror("cat: Failed to open file");
-			freeFiles(files,i);
+			freeFiles(files, i);
 			return 1;
 		}
-		
+		//}
+
 	}
 
-	char buffer[1024];
-
+	char buffer[BUFFER_SIZE];
+	int bytesRead;
+	int counter = command.argc;
+	char input[MAX_COMMAND_SIZE];
 	for (int i = 0; i < command.argc; i++) {
 		//printf("here"); //DEBUG
-		while (fgets(buffer,1024,files[i])) {
-			//printf("%s", buffer); //DEBUG
-			fputs(buffer, stdout);
+		if (files[i] != NULL)
+		{
+			//counter = 0;
+			while ((bytesRead = fread(buffer, sizeof(char), BUFFER_SIZE, files[i])) > 0) {
+				//printf("%s", buffer); //DEBUG
+				fwrite(buffer, sizeof(char), bytesRead, stdout);
+
+				if (counter == 2 && !command.PrintAll && bytesRead == BUFFER_SIZE) {
+					printf("\ncat: want to contiune? (y/n): ");
+					fgets(input, MAX_COMMAND_SIZE, stdin);
+
+					//printf("%d", strlen(input));
+					if (strlen(input) != 2 || (input[0] != 'y' && input[0] && 'n')) {
+						printf("cat: Enter a valid argument (y/n)\n");
+						freeFiles(files, command.argc);
+						return 0;
+					}
+					switch (input[0]) {
+					case 'y':
+						counter = 0;
+
+						continue;
+						break;
+					default:
+						freeFiles(files, command.argc);
+						return 0;
+
+					}
+				}
+				counter++;
+			}
+			printf("\n");
 		}
-		printf("\n");
 	}
 	freeFiles(files, command.argc);
 
-	
+
 
 
 }

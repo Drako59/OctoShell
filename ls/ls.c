@@ -46,23 +46,23 @@ char* utf16_to_utf8(const wchar_t* w)
 
 	int n = WideCharToMultiByte(CP_UTF8, 0, w, -1, NULL, 0, NULL, NULL);
 	if (n <= 0) {
-		fputs("Threre was an error in converting utf16->utf8\n", stdout); 
+		fputs("Threre was an error in converting utf16->utf8\n", stdout);
 		return NULL;
 	}
 	char* s = (char*)malloc((size_t)n);
-	if (!s) { 
-		printAllocError(); 
+	if (!s) {
+		printAllocError();
 		return NULL;
 	}
 
 	if (WideCharToMultiByte(CP_UTF8, 0, w, -1, s, n, NULL, NULL) == 0) {
 		free(s);
-		fputs("Threre was an error in converting utf16->utf8\n", stdout); 
+		fputs("Threre was an error in converting utf16->utf8\n", stdout);
 
 		return NULL;
 	}
 
-	return s; 
+	return s;
 }
 
 BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
@@ -70,7 +70,7 @@ BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 	command->long_details = FALSE;
 	command->start_of_hidden_content = L'.';
 	command->param_num = 0;
-	command->argv = (char**)malloc((argc + 1)* sizeof(char*));
+	command->argv = (char**)malloc((argc + 1) * sizeof(char*));
 	command->param = (char**)malloc((argc + 1) * sizeof(char*));
 	if (command->argv == NULL || command->param == NULL)
 	{
@@ -81,15 +81,15 @@ BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 			free(command->param);
 		return FALSE;
 	}
-	
+
 	for (int i = 1; i < argc; i++) {
-		if (argv[i ][0] == '-' && (strlen(argv[i]) > 1)) {
-			command->param[command->param_num] = argv[i ];
+		if (argv[i][0] == '-' && (strlen(argv[i]) > 1)) {
+			command->param[command->param_num] = argv[i];
 			command->param_num++;
 		}
 		else
 		{
-			command->argv[command->argc] = argv[i ];
+			command->argv[command->argc] = argv[i];
 			command->argc++;
 
 		}
@@ -123,7 +123,7 @@ char* parameter_as_string(char** para, int size) {
 	//printf("%d", size);//DEBUG
 	//printf("%s", para[0]); //DEBUG
 	for (int i = 0; i < size; i++) {
-		length += strlen(para[i]) - 1 ;
+		length += strlen(para[i]) - 1;
 	}
 
 	char* para_str = (char*)malloc(sizeof(char) * length);
@@ -152,7 +152,7 @@ void print_full_file_details(WIN32_FIND_DATAW fileData) {
 	SYSTEMTIME sysTime;
 	FileTimeToSystemTime(&fileTime, &sysTime);
 
-	printf("xxxxxxxxxx\tx\tgroup\tuser\tsize\t%04d\t%02d\t%02d\t%02d:%02d\t\t%s\n",sysTime.wYear, sysTime.wMonth, sysTime.wDay , sysTime.wHour, sysTime.wMinute, file_name ); // xxxxxxxxxx x group user size year motnh day hour filename
+	printf("xxxxxxxxxx\tx\tgroup\tuser\tsize\t%04d\t%02d\t%02d\t%02d:%02d\t\t%s\n", sysTime.wYear, sysTime.wMonth, sysTime.wDay, sysTime.wHour, sysTime.wMinute, file_name); // xxxxxxxxxx x group user size year motnh day hour filename
 
 
 	free(file_name);
@@ -192,7 +192,7 @@ BOOL Default_ls(CommandParsed* command) {
 	memset(&fileData, 0, sizeof(fileData));
 	while (FindNextFileW(hSearch, &fileData)) {
 		//sep = i % elements_in_a_row == 0 ? "\n" : "\t\t";
-		
+
 		if (fileData.cFileName[0] != command->start_of_hidden_content) {
 			if (command->long_details) {
 				print_full_file_details(fileData);
@@ -222,7 +222,7 @@ int main(int argc, char** argv)
 	HANDLE hSearch;
 	CommandParsed command;
 	if (argc > 2) {
-		fputs("ls: Invalid number of parametrs.\n", stdout );
+		fputs("ls: Invalid number of parametrs.\n", stdout);
 	}
 	if (!CommandParser_init(&command, argc, argv)) {
 		return 1;
@@ -230,13 +230,13 @@ int main(int argc, char** argv)
 	WIN32_FIND_DATAW fileData;
 	int i = 1;
 	char* sep = "\n";
-	
 
 
-	char* united_para_str = parameter_as_string(command.param, command.param_num );
-		
+
+	char* united_para_str = parameter_as_string(command.param, command.param_num);
+
 	//printf("%s\n", united_para_str);
-	
+
 	if (united_para_str != NULL && ((strchr(united_para_str, 'a') != NULL) || (strchr(united_para_str, 'A') != NULL))) {
 		//printf("%d",command.param_num	);//DEBUG
 		command.param_num--;
@@ -246,40 +246,40 @@ int main(int argc, char** argv)
 		//printf("%d",command.param_num	);//DEBUG
 		printf("Premissions\tx\tGroup\tUser\tSize\tYear\tMonth\tDay\tHour:Min\tfilename\n----------------------------------------------------------------------------------------------------\n");
 		command.long_details = TRUE;
-		
+
 	}
 
 	//if(command.param_num == 0){
-		if (Default_ls(&command) == NULL) {
-			return 1;
-		}
-		//if (command.argc == 0) {
-		//	hSearch = FindFirstFileW(L"*", &fileData);
-		//}
-		//else {
-		//	wchar_t* WPath = utf8_to_utf16(argv[1]);
-		//	hSearch = FindFirstFileW(WPath, &fileData);
-		//	free(WPath);
-		//}
-		//
-		//if (hSearch == INVALID_HANDLE_VALUE) {
-		//	fputs("There is no file found for this\n", stdout);
-		//}
-		//if (fileData.cFileName[0] != start_of_hidden_content) {
-		//	if (!fputsUTF16(fileData.cFileName)) return 1;
-		//}
-		//memset(&fileData, 0, sizeof(fileData));
-		//while (FindNextFileW(hSearch, &fileData)) {
-		//	//sep = i % elements_in_a_row == 0 ? "\n" : "\t\t";
-		//	if (fileData.cFileName[0] != start_of_hidden_content) {
-		//		if (!fputsUTF16(fileData.cFileName)) return 1;
-		//		fputs(sep, stdout);
-		//	}
-		//	memset(&fileData, 0, sizeof(fileData));
-		//	i++;
-		//}
-		//fputs("\n", stdout);
+	if (Default_ls(&command) == NULL) {
+		return 1;
+	}
+	//if (command.argc == 0) {
+	//	hSearch = FindFirstFileW(L"*", &fileData);
 	//}
+	//else {
+	//	wchar_t* WPath = utf8_to_utf16(argv[1]);
+	//	hSearch = FindFirstFileW(WPath, &fileData);
+	//	free(WPath);
+	//}
+	//
+	//if (hSearch == INVALID_HANDLE_VALUE) {
+	//	fputs("There is no file found for this\n", stdout);
+	//}
+	//if (fileData.cFileName[0] != start_of_hidden_content) {
+	//	if (!fputsUTF16(fileData.cFileName)) return 1;
+	//}
+	//memset(&fileData, 0, sizeof(fileData));
+	//while (FindNextFileW(hSearch, &fileData)) {
+	//	//sep = i % elements_in_a_row == 0 ? "\n" : "\t\t";
+	//	if (fileData.cFileName[0] != start_of_hidden_content) {
+	//		if (!fputsUTF16(fileData.cFileName)) return 1;
+	//		fputs(sep, stdout);
+	//	}
+	//	memset(&fileData, 0, sizeof(fileData));
+	//	i++;
+	//}
+	//fputs("\n", stdout);
+//}
 
 	if (united_para_str != NULL)
 		free(united_para_str);
