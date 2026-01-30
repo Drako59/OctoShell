@@ -1,11 +1,79 @@
 // ping.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <iostream>
+#define WIN32_LEAN_AND_MEAN
 
-int main()
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#include <icmpapi.h>
+#include <stdio.h>
+
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Iphlpapi.lib")
+
+
+int main(int argc, char** argv)
 {
-    std::cout << "Hello World!\n";
+	char* test = "hello";
+
+	IN_ADDR addr;
+	if (argc != 2)
+	{
+		printf("ping: Enter valid number of parameters");
+	}
+	if (inet_pton(AF_INET, argv[1], &addr) != 1) {
+		printf("ping: couldn't intilize the ip.");
+	}
+
+	char addrStr[INET6_ADDRSTRLEN];
+	inet_ntop(AF_INET, &addr, addrStr, sizeof(addrStr));
+	printf("-----ping %s------\n",addrStr);
+
+
+	HANDLE hIcmpFile = IcmpCreateFile();
+
+	if (hIcmpFile == NULL)
+	{
+		printf("ping: There was a problem in opening the ICMP file.");
+		return 1;
+	}
+	
+	IP_OPTION_INFORMATION options;
+	ZeroMemory(&options, sizeof(IP_OPTION_INFORMATION));
+	options.Ttl = 64;
+	char* replayBuffer[1024];
+	IcmpSendEcho(hIcmpFile,addr.S_un.S_addr,test,sizeof(test) * strlen(test),&options, replayBuffer, sizeof(replayBuffer),1000 );
+
+	PICMP_ECHO_REPLY reply = (PICMP_ECHO_REPLY)replayBuffer;
+
+	if (reply->Status == IP_REQ_TIMED_OUT) {
+		printf("Ping request reached his timeout......\n");
+	}
+	else if (reply->Status == IP_TTL_EXPIRED_TRANSIT) {
+		printf("ping reached his hops limit and got thorwed away.");
+
+	}
+	else if (reply->Status == IP_SUCCESS) {
+		char addrReplayStr[INET6_ADDRSTRLEN];
+		IN_ADDR replayAddr;
+		replayAddr.S_un.S_addr = reply->Address;
+		inet_ntop(AF_INET, &replayAddr, addrReplayStr, sizeof(addrReplayStr));
+
+		printf("REPLAY ADDR: %s RTT: %lu\n", addrReplayStr);
+	}
+	else {
+		printf("ping failed :(");
+	}
+
+	/*
+	* ---8.8.8.8 ping statistics---
+			5 packets transmitted, 5 received, 0% packet loss, time 4004ms
+			rtt min/avg/max/mdev = 12.345/12.456/12.567/0.123 ms
+	*/
+
+
+	IcmpCloseHandle(hIcmpFile);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
