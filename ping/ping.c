@@ -43,27 +43,32 @@ int main(int argc, char** argv)
 	ZeroMemory(&options, sizeof(IP_OPTION_INFORMATION));
 	options.Ttl = 64;
 	char* replayBuffer[1024];
-	IcmpSendEcho(hIcmpFile,addr.S_un.S_addr,test,sizeof(test) * strlen(test),&options, replayBuffer, sizeof(replayBuffer),1000 );
+	PICMP_ECHO_REPLY reply;
+	for (int i = 0; i < 4; i++) {
+		IcmpSendEcho(hIcmpFile, addr.S_un.S_addr, test, sizeof(test) * strlen(test), &options, replayBuffer, sizeof(replayBuffer), 1000);
 
-	PICMP_ECHO_REPLY reply = (PICMP_ECHO_REPLY)replayBuffer;
+		reply = (PICMP_ECHO_REPLY)replayBuffer;
 
-	if (reply->Status == IP_REQ_TIMED_OUT) {
-		printf("Ping request reached his timeout......\n");
-	}
-	else if (reply->Status == IP_TTL_EXPIRED_TRANSIT) {
-		printf("ping reached his hops limit and got thorwed away.");
+		if (reply->Status == IP_REQ_TIMED_OUT) {
+			printf("Ping request reached his timeout......\n");
+		}
+		else if (reply->Status == IP_TTL_EXPIRED_TRANSIT) {
+			printf("ping reached his hops limit and got thorwed away.");
 
-	}
-	else if (reply->Status == IP_SUCCESS) {
-		char addrReplayStr[INET6_ADDRSTRLEN];
-		IN_ADDR replayAddr;
-		replayAddr.S_un.S_addr = reply->Address;
-		inet_ntop(AF_INET, &replayAddr, addrReplayStr, sizeof(addrReplayStr));
+		}
+		else if (reply->Status == IP_SUCCESS) {
+			char addrReplayStr[INET6_ADDRSTRLEN];
+			IN_ADDR replayAddr;
+			replayAddr.S_un.S_addr = reply->Address;
+			inet_ntop(AF_INET, &replayAddr, addrReplayStr, sizeof(addrReplayStr));
 
-		printf("REPLAY ADDR: %s RTT: %lu\n", addrReplayStr);
-	}
-	else {
-		printf("ping failed :(");
+			printf("REPLAY ADDR: %s RTT: %lu TTL: %u\n", addrReplayStr, reply->RoundTripTime,options.Ttl);
+		}
+		else {
+			printf("ping failed :(");
+		}
+		Sleep(1000);
+
 	}
 
 	/*
@@ -72,6 +77,7 @@ int main(int argc, char** argv)
 			rtt min/avg/max/mdev = 12.345/12.456/12.567/0.123 ms
 	*/
 
+	//For demosntrating a real ping
 
 	IcmpCloseHandle(hIcmpFile);
 }
