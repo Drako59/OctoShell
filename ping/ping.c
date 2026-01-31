@@ -44,6 +44,8 @@ int main(int argc, char** argv)
 	options.Ttl = 64;
 	char* replayBuffer[1024];
 	PICMP_ECHO_REPLY reply;
+	int success_counter = 0;
+	ULONG sum_time = 0;
 	for (int i = 0; i < 4; i++) {
 		IcmpSendEcho(hIcmpFile, addr.S_un.S_addr, test, sizeof(test) * strlen(test), &options, replayBuffer, sizeof(replayBuffer), 1000);
 
@@ -53,22 +55,28 @@ int main(int argc, char** argv)
 			printf("Ping request reached his timeout......\n");
 		}
 		else if (reply->Status == IP_TTL_EXPIRED_TRANSIT) {
-			printf("ping reached his hops limit and got thorwed away.");
+			printf("ping reached his hops limit and got thorwed away.\n");
 
 		}
 		else if (reply->Status == IP_SUCCESS) {
+			success_counter++;
+			sum_time += reply->RoundTripTime;
 			char addrReplayStr[INET6_ADDRSTRLEN];
 			IN_ADDR replayAddr;
 			replayAddr.S_un.S_addr = reply->Address;
 			inet_ntop(AF_INET, &replayAddr, addrReplayStr, sizeof(addrReplayStr));
 
-			printf("REPLAY ADDR: %s RTT: %lu TTL: %u\n", addrReplayStr, reply->RoundTripTime,options.Ttl);
+			printf("REPLAY ADDR: %s RTT: %lums TTL: %u\n", addrReplayStr, reply->RoundTripTime,options.Ttl);
 		}
 		else {
-			printf("ping failed :(");
+			printf("ping failed :(\n");
 		}
 		Sleep(1000);
 
+	}
+	
+	if (success_counter > 1) {
+		printf("avg ping RTT: %.2fms\n", (double)sum_time / success_counter);
 	}
 
 	/*
