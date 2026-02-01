@@ -172,6 +172,14 @@ BOOL Default_ls(CommandParsed* command) {
 	}
 	else {
 		wchar_t* WPath = utf8_to_utf16(command->argv[0]);
+		wchar_t* WPathFull = (wchar_t*)realloc(WPath, (wcslen(WPath) + 3) * sizeof(wchar_t));
+		if (WPathFull == NULL) {
+			printAllocError();
+			free(WPath);
+			return FALSE;
+		}
+		WPath = WPathFull;
+		wcscat(WPath, L"/*");
 		hSearch = FindFirstFileW(WPath, &fileData);
 		free(WPath);
 	}
