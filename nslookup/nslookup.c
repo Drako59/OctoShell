@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
 
 
-
+	printf("\nDNS RESPONSE TYPE: A:\n");//HEADER
 	char* replayBuffer[1024];
 	for (int j = 0; j < command.argc; j++) {
 		ZeroMemory(&infoDNS, sizeof(infoDNS));
@@ -57,8 +57,13 @@ int main(int argc, char** argv)
 
 		char addrStr[INET6_ADDRSTRLEN];
 		inet_ntop(AF_INET, &(addr->sin_addr), addrStr, sizeof(addrStr));
-		printf("DNS RESPONSE: %s-->%s\n", command.argv[j], addrStr);
+		printf("%s-->%s\n", command.argv[j], addrStr);
 	}
+	printf("\n");
+
+	FreeCommandParser(&command);
+	WSACleanup();
+	freeaddrinfo(resultDNS);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
