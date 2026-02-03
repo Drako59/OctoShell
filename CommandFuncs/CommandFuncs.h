@@ -2,6 +2,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 
 typedef struct Parameter {
@@ -16,13 +18,14 @@ typedef struct CommandParsed {
 	Parameter* parameters;
 	int argc;
 	char** argv;
+	
 } CommandParsed;
 
-
+char* GetValueOfParameter(CommandParsed* command, char name);
 
 wchar_t* utf8_to_utf16(const char* s);
 void printAllocError(void);
-BOOL CommandParser_init(CommandParsed* command, int argc, char** argv);
+BOOL CommandParser_init(CommandParsed* command, int argc, char** argv, char* hasParameterValues);
 void FreeCommandParser(CommandParsed* command);
 BOOL fputsUTF16(wchar_t* w);
 char* ParameterAsString(char** para, int size);

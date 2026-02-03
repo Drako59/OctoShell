@@ -408,6 +408,7 @@ void Command_init(Command* command, HANDLE hStdInputFile, HANDLE hStdOutFile) {
 
 int main()
 {
+	//printf("%d\n", sizeof(char*));
 	enable_ansi_colors();
 	printOctopus();
 	wprintf(L"Welcome to OctoShell 🐙\n");
@@ -521,7 +522,7 @@ int main()
 
 	}
 
-EXIT:
+
 	freePathNode(start_path);
 
 	printf("success");

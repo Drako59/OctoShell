@@ -1,11 +1,64 @@
-// nslookup.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// nslookup.c : This file contains the 'main' function. Program execution begins and ends there.
 //
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#include <Windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "CommandFuncs.h"
 
-#include <iostream>
 
-int main()
+
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Iphlpapi.lib")
+
+int main(int argc, char** argv)
 {
-    std::cout << "Hello World!\n";
+
+	CommandParsed command;
+	CommandParser_init(&command, argc, argv, NULL);
+
+	struct sockaddr_in* addr;
+	WSADATA WSA;
+	DWORD startUpRet = WSAStartup(MAKEWORD(2, 2), &WSA);
+	if (startUpRet) {
+		printf("nslookup: wsa start up failed, ERROR: %d\n", startUpRet);
+		return 1;
+	}
+	struct addrinfo infoDNS;
+	struct addrinfo* resultDNS = NULL;
+	const char* domain;
+
+
+
+
+
+	char* replayBuffer[1024];
+	for (int j = 0; j < command.argc; j++) {
+		ZeroMemory(&infoDNS, sizeof(infoDNS));
+
+		infoDNS.ai_family = AF_INET;
+		infoDNS.ai_socktype = SOCK_DGRAM;
+
+
+
+		domain = command.argv[j];
+
+		int ret = getaddrinfo(domain, NULL, &infoDNS, &resultDNS);
+		if (ret) {
+			printf("nslookup: Error occured while getting the IP, ERROR: %d\n", ret);
+			return 1;
+		}
+		addr = (struct sockaddr_int*)resultDNS->ai_addr;
+
+		//printf("argv[0]->%s\n", command.argv[j]); //DEBUG-> REMOVE
+
+
+		char addrStr[INET6_ADDRSTRLEN];
+		inet_ntop(AF_INET, &(addr->sin_addr), addrStr, sizeof(addrStr));
+		printf("DNS RESPONSE: %s-->%s\n", command.argv[j], addrStr);
+	}
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

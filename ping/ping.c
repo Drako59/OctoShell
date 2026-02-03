@@ -21,27 +21,42 @@ BOOL ResolveDNSv4() {
 
 int main(int argc, char** argv)
 {
+	//DEBUG
+	/*argv = (char**)malloc(sizeof(char*) * 4);
+	argc = 2;
+
+	argv[1] = "www.google.com";
+	argv[2] = "-n";
+	argv[3] = "10";*/
+	 //
+	char* test = "hello";
+	
+
+	CommandParsed command;
+	CommandParser_init(&command, argc, argv, "aAnN");
+	/*printf("argc->%d\n", command.argc);
+	printf("argv[0]->%s\n", command.argv[0]);*/
+	char* parametersStr = ParameterAsString(command.param, command.param_num);
+	
+
+	int packagesAmount = 4;
+	if (parametersStr != NULL) {
+		if (strchr(parametersStr, 'n') || strchr(parametersStr, 'N')) {
+			char* endPtr = NULL;
+			char* valueStr = GetValueOfParameter(&command, 'n');
+			if (valueStr == NULL) {
+				printf("ping: There is missing value to parameter 'n'\n");
+				return 1;
+			}
+			int value = (int)strtol(valueStr, &endPtr, 10);
+			if (*endPtr != '\0')
+				printf("Enter a valid integer value to 'n'\n");
+			packagesAmount = value;
+
+		}
+	}
 
 	
-	 
-	char* test = "hello";
-	/*if (argc != 2)
-	{
-		printf("ping: Enter valid number of parameters\n");
-		return 1;
-	}*/
-
-	/*CommandParsed command;
-	CommandParser_init(&command,argc,argv);*/
-
-	int PackagesAmount = 4;
-
-	/*char* startInde;
-	char* strParametrs = ParameterAsString(command.param, command.param_num);
-
-	if (strchr(strParametrs, 'a') || strchr(strParametrs, 'A')) {
-
-	}*/
 	struct sockaddr_in* addr;
 	WSADATA WSA;
 	DWORD startUpRet = WSAStartup(MAKEWORD(2, 2), &WSA);
@@ -64,7 +79,7 @@ int main(int argc, char** argv)
 	ZeroMemory(&options, sizeof(IP_OPTION_INFORMATION));
 	options.Ttl = 64;
 	char* replayBuffer[1024];
-	for (int j = 1; j < argc; j++) {
+	for (int j = 0; j < command.argc; j++) {
 		ZeroMemory(&infoDNS, sizeof(infoDNS));
 
 		infoDNS.ai_family = AF_INET;
@@ -72,7 +87,7 @@ int main(int argc, char** argv)
 
 
 
-		domain = argv[j];
+		domain = command.argv[j];
 
 		int ret = getaddrinfo(domain, NULL, &infoDNS, &resultDNS);
 		if (ret) {
@@ -81,18 +96,19 @@ int main(int argc, char** argv)
 		}
 		addr = (struct sockaddr_int*)resultDNS->ai_addr;
 
+		//printf("argv[0]->%s\n", command.argv[j]); //DEBUG-> REMOVE
 
 
 		char addrStr[INET6_ADDRSTRLEN];
 		inet_ntop(AF_INET, &(addr->sin_addr), addrStr, sizeof(addrStr));
-		printf("\n-----ping %s-->%s------\n", argv[j],addrStr);
+		printf("\n-----ping %s-->%s------\n", command.argv[j], addrStr);
 
 
 
 		PICMP_ECHO_REPLY reply;
 		int success_counter = 0;
 		ULONG sum_time = 0;
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < packagesAmount; i++) {
 			IcmpSendEcho(hIcmpFile, addr->sin_addr.S_un.S_addr, test, sizeof(test) * strlen(test), &options, replayBuffer, sizeof(replayBuffer), 1000);
 
 			reply = (PICMP_ECHO_REPLY)replayBuffer;
@@ -112,7 +128,7 @@ int main(int argc, char** argv)
 				replayAddr.S_un.S_addr = reply->Address;
 				inet_ntop(AF_INET, &replayAddr, addrReplayStr, sizeof(addrReplayStr));
 
-				printf("REPLAY ADDR: %s-->%s RTT: %lums TTL: %u\n", argv[j] , addrReplayStr, reply->RoundTripTime, options.Ttl);
+				printf("REPLAY ADDR: %s-->%s RTT: %lums TTL: %u\n", command.argv[j], addrReplayStr, reply->RoundTripTime, options.Ttl);
 			}
 			else {
 				printf("ping failed :(\n");
@@ -134,7 +150,7 @@ int main(int argc, char** argv)
 
 	//For demosntrating a real ping
 	 
-	//FreeCcommandParser(&command);
+	FreeCommandParser(&command);
 	WSACleanup();
 	freeaddrinfo(resultDNS);
 	IcmpCloseHandle(hIcmpFile);

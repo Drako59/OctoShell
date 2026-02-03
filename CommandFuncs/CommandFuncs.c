@@ -15,7 +15,7 @@
 
 
 void printAllocError(void) {
-	fputs("cat: Allocation failed, maybe next time when you will have more ram avilible....\n", stdout);
+	fputs("CommandParser: Allocation failed, maybe next time when you will have more ram avilible....\n", stdout);
 }
 
 wchar_t* utf8_to_utf16(const char* s)
@@ -66,15 +66,19 @@ char* utf16_to_utf8(const wchar_t* w)
 //NOTE!!!! CHANE TO BYTE!!!!!
 
 
-//initilized the command structure with the arguments and parameters (remove the first value of argv because it is the path)
-BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
+//initilized the command structure with the arguments and parameters (get a list which stote the parameters with a value accosiete)(remove the first value of argv because it is the path)
+BOOL CommandParser_init(CommandParsed* command, int argc, char** argv, char* hasParameterValues) {
 	command->argc = 0;
 	command->param_num = 0;
 	command->argv = (char**)malloc((argc + 1) * sizeof(char*));
 	command->param = (char**)malloc((argc + 1) * sizeof(char*));
 	//command->parameters = (Parameter*)malloc((argc + 1) * sizeof(Parameter));
-	if (command->argv == NULL || command->param == NULL || command->parameters == NULL)
+	command->parameters = NULL;
+	Parameter* paraArr = NULL;
+	if (command->argv == NULL || command->param == NULL )
 	{
+		printf("here");
+
 		printAllocError();
 		if (command->argv != NULL)
 			free(command->argv);
@@ -82,11 +86,33 @@ BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 			free(command->param);
 		return FALSE;
 	}
-
 	for (int i = 1; i < argc; i++) {
 		if (argv[i][0] == '-' && (strlen(argv[i]) > 1)) {
+			paraArr = (Parameter*)realloc(command->parameters,sizeof(Parameter) * (command->param_num + 1));
+			if (paraArr == NULL) {
+				printAllocError();
+				if (command->parameters != NULL)
+					FreeCommandParser(command);
+				else {
+					free(command->argv);
+					free(command->param);
+				}
+				return NULL;
+			}
+			command->parameters = paraArr;
 			command->param[command->param_num] = argv[i];
-			//command->parameters[command->param_num];
+			command->parameters[command->param_num].value = NULL;
+			command->parameters[command->param_num].hasValue = FALSE;
+			command->parameters[command->param_num].name = &(argv[i][1]);
+			if (hasParameterValues != NULL && strchr(hasParameterValues, argv[i][1])) {
+				if (++i >= argc) {
+					printf("Missing arguments for the parameter -%s", command->parameters[command->param_num].name );
+					FreeCommandParser(command);
+					return FALSE;
+				}
+				command->parameters[command->param_num].hasValue = TRUE;
+				command->parameters[command->param_num].value = argv[i];
+			}
 
 			command->param_num++;
 		}
@@ -106,6 +132,7 @@ BOOL CommandParser_init(CommandParsed* command, int argc, char** argv) {
 void FreeCommandParser(CommandParsed* command) {
 	free(command->argv);
 	free(command->param);
+	free(command->parameters);
 }
 BOOL fputsUTF16(wchar_t* w) {
 	char* str = utf16_to_utf8(w);
@@ -142,4 +169,14 @@ char* ParameterAsString(char** para, int size) {
 
 	return para_str;
 
+}
+
+char* GetValueOfParameter(CommandParsed* command,char name) {
+	char test;
+	for (int i = 0; i < command->param_num; i++) {
+		if (name  == (char)tolower(  command->parameters->name[0])) {
+			return command->parameters[i].value;
+		}
+	}
+	return NULL;
 }
