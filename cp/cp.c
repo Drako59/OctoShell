@@ -146,7 +146,8 @@ int main(int argc, char** argv)
 
 			if (check1 == 0 || check2 == 0 || check1 > MAX_PATH || check2 > MAX_PATH)
 			{
-				printf("cp: error in getting full path, too large or too small.\n");
+				/*printf("cp: error in getting full path, too large or too small.\n");
+				return 0;*/
 			}
 			if (_wcsicmp(srcFullPath, dstFullPath) == 0) {
 				printf("cp: source and destination are the same file\n");

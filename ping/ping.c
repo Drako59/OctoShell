@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 			}
 			int value = (int)strtol(valueStr, &endPtr, 10);
 			if (*endPtr != '\0')
-				printf("Enter a valid integer value to 'n'\n");
+				printf("ping: Enter a valid integer value to 'n'\n");
 			packagesAmount = value;
 
 		}
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 
 		int ret = getaddrinfo(domain, NULL, &infoDNS, &resultDNS);
 		if (ret) {
-			printf("ping: Error occured while getting the IP, ERROR: %d\n", ret);
+			printf("ping: Error occured while getting the IP, or translating domain, ERROR: %d\n", ret);
 			return 1;
 		}
 		addr = (struct sockaddr_int*)resultDNS->ai_addr;

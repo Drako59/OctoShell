@@ -10,6 +10,7 @@
 
 #define MAX_COMMAND_SIZE 256
 #define BUFFER_SIZE 1024
+#define STDIN_BUFFER_SIZE 
 
 //shared function and types
 typedef struct CommandParsed {
@@ -160,7 +161,7 @@ void freeFiles(FILE** files, int argc) {
 int main(int argc, char** argv)
 {
 	//DEBUG************************************************************************************
-	/*argc = 2;
+	/*argc = 0;
 
 	argv = (char**)malloc(2 * sizeof(char*));
 
@@ -186,64 +187,80 @@ int main(int argc, char** argv)
 		}
 	}
 
-	FILE** files = (FILE**)malloc((argc - 1) * sizeof(FILE*));
-	if (files == NULL) {
-		printAllocError();
-		return 1;
-	}
-
-
-	for (int i = 0; i < command.argc; i++) {
-		
-		files[i] = fopen(command.argv[i], "rb");
-		if (files[i] == NULL) {
-			printf("cat: Error occured while opening %s\n", command.argv[i]);
-			perror("cat: Failed to open file");
-			freeFiles(files, i);
+	
+	if (command.argc != 0) {
+		FILE** files = (FILE**)malloc((argc - 1) * sizeof(FILE*));
+		if (files == NULL) {
+			printAllocError();
 			return 1;
 		}
+		for (int i = 0; i < command.argc; i++) {
 
-	}
-
-	char buffer[BUFFER_SIZE];
-	int bytesRead;
-	int counter = 0;
-	char input[MAX_COMMAND_SIZE];
-	for (int i = 0; i < command.argc; i++) {
-		if (files[i] != NULL)
-		{
-			//counter = 0;
-			while ((bytesRead = fread(buffer, sizeof(char), BUFFER_SIZE, files[i])) > 0) {
-				fwrite(buffer, sizeof(char), bytesRead, stdout);
-
-				if (counter == 2 && !command.PrintAll && bytesRead == BUFFER_SIZE) {
-					printf("\ncat: want to contiune? (y/n): ");
-					fgets(input, MAX_COMMAND_SIZE, stdin);
-
-					if (strlen(input) != 2 || (input[0] != 'y' && input[0] && 'n')) {
-						printf("cat: Enter a valid argument (y/n)\n");
-						freeFiles(files, command.argc);
-						return 0;
-					}
-					switch (input[0]) {
-					case 'y':
-						counter = 0;
-
-						continue;
-						break;
-					default:
-						freeFiles(files, command.argc);
-						return 0;
-
-					}
-				}
-				counter++;
+			files[i] = fopen(command.argv[i], "rb");
+			if (files[i] == NULL) {
+				printf("cat: Error occured while opening %s\n", command.argv[i]);
+				perror("cat: Failed to open file");
+				freeFiles(files, i);
+				return 1;
 			}
-			printf("\n");
-		}
-	}
-	freeFiles(files, command.argc);
 
+		}
+
+		char buffer[BUFFER_SIZE];
+		int bytesRead;
+		int counter = 0;
+		char input[MAX_COMMAND_SIZE];
+		for (int i = 0; i < command.argc; i++) {
+			if (files[i] != NULL)
+			{
+				//counter = 0;
+				while ((bytesRead = fread(buffer, sizeof(char), BUFFER_SIZE, files[i])) > 0) {
+					fwrite(buffer, sizeof(char), bytesRead, stdout);
+
+					if (counter == 2 && !command.PrintAll && bytesRead == BUFFER_SIZE) {
+						printf("\ncat: want to contiune? (y/n): ");
+						fgets(input, MAX_COMMAND_SIZE, stdin);
+
+						if (strlen(input) != 2 || (input[0] != 'y' && input[0] && 'n')) {
+							printf("cat: Enter a valid argument (y/n)\n");
+							freeFiles(files, command.argc);
+							return 0;
+						}
+						switch (input[0]) {
+						case 'y':
+							counter = 0;
+
+							continue;
+							break;
+						default:
+							freeFiles(files, command.argc);
+							return 0;
+
+						}
+					}
+					counter++;
+				}
+				printf("\n");
+			}
+		}
+		freeFiles(files, command.argc);
+	}
+	else {
+		HANDLE hSTDIN = GetStdHandle(STD_INPUT_HANDLE);
+		HANDLE hOUT = GetStdHandle(STD_OUTPUT_HANDLE);
+		char buffer[BUFFER_SIZE];
+		int bytesRead;
+
+		while (ReadFile(hSTDIN,buffer,sizeof(buffer),&bytesRead,NULL)) {
+			if (bytesRead == 0) break;
+			DWORD written;
+			WriteFile(hOUT,buffer,bytesRead,&written,NULL);
+		}
+
+
+		
+	}
+	return 0;
 
 
 

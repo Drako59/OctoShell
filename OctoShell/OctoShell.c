@@ -221,6 +221,20 @@ BOOL SetRedirectOUT(char* fileName, Command* command) {
 	command->stdout_file = outFile;
 	command->redirect_out = TRUE;
 }
+BOOL SetRedirectINPUT(char* fileName, Command* command) {
+	wchar_t* unicode_transfer = utf8_to_utf16(fileName);
+	HANDLE inputFile = CreateFileW(unicode_transfer, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(unicode_transfer);
+	if (inputFile == NULL || inputFile == INVALID_HANDLE_VALUE)
+	{
+		printf("There was an error opening th file.\n");
+		FreeStrArr(command->argv, command->argc);
+		free(command->name);
+		return NULL;
+	}
+	command->stdin_file = inputFile;
+	command->redirect_in = TRUE;
+}
 
 BOOL CheckForQuote(char* command_str, char sep) {
 	int QuoteCounts = 0;
@@ -288,6 +302,10 @@ char* strtokCommand(char* command_str, char* sep) {
 
 }
 
+void FreeCommandSepError() {
+
+}
+
 Command* SepIntoCommand(char* command_str, Command* command) { //to choose if return a command obj or to pass one
 	char* ptr = NULL;
 	char* cmd;
@@ -299,6 +317,9 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 	char* sep = " ";
 	char* tok;
 	//seperate into tokens and 
+
+
+	//add a redirect in
 	tok = strtokCommand(command_str, sep);
 	if (!tok) return NULL;
 	cmd = tok;
@@ -319,6 +340,31 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 			tok = strtokCommand(NULL, sep);
 			continue;
 		}
+		//********************************************************************************** ->>>>>> REDIRECT INPUT NEED TO FIX!!!!
+		//else if (strncmp(tok, "<", COMMAND_MAX_SIZE) == 0) {
+		//	if (argc == 0) {
+		//		if (SetRedirectINPUT(command->name, command) == NULL) return NULL;
+		//		free(command->name);
+
+
+		//		tok = strtokCommand(NULL, sep);
+		//		if (tok == NULL)  return NULL; //add error handling
+		//			
+		//			command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
+		//			strcpy(command->name, tok);
+		//			tok = strtokCommand(NULL, sep);
+		//			continue;
+
+		//		
+		//	}
+		//	else {
+		//		if (SetRedirectINPUT(command->argv[--argc], command) == NULL) return NULL;
+		//		free(command->argv[argc]);
+		//		tok = strtokCommand(NULL, sep);
+		//		continue;
+		//	}
+		//}
+		//***********************************************************************************
 		command->argv[argc] = (char*)malloc(sizeof(char) * (strlen(tok) + 2));
 		//printf("argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command->argv[argc]); //DEBUG
 		//printf("tok->%s", tok); //DEBUG

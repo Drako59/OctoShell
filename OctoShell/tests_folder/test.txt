@@ -1,26 +1,11 @@
-basicImports.h
-change.txt
-DirectoryFunc.c
-DirectoryFunc.h
-includes.h
-Linux_functions_files.c
-noteixt
-OctoShell.c
-OctoShell.vcxproj
-OctoShell.vcxproj.filters
-OctoShell.vcxproj.user
-oompa_loompa.txt
-Proccess.c
-Proccess.h
-stringFuncs.c
-stringFuncs.h
-test
-test.txt
-test4
-test4.txt
-test49.txt
-test5.txt
-test56.txt
+
+-----ping www.google.com-->142.250.75.132------
+REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 13ms TTL: 64
+REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 10ms TTL: 64
+REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 9ms TTL: 64
+REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 10ms TTL: 64
+avg ping RTT: 10.50ms
+t
 test69.txt
 tests_files
 testtest2.txt

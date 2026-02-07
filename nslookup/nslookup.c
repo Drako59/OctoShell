@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
 
 
-	printf("\nDNS RESPONSE TYPE: A:\n");//HEADER
+	printf("\nDNS RESPONSE TYPE->A:\n");//HEADER
 	char* replayBuffer[1024];
 	for (int j = 0; j < command.argc; j++) {
 		ZeroMemory(&infoDNS, sizeof(infoDNS));
