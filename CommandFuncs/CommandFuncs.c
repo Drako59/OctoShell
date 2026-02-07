@@ -12,7 +12,9 @@
 
 
 
-
+void printUtfCastError() {
+	fputs("There was error in the casting of utf string.\n",stdout);
+}
 
 void printAllocError(void) {
 	fputs("CommandParser: Allocation failed, maybe next time when you will have more ram avilible....\n", stdout);
@@ -43,7 +45,7 @@ char* utf16_to_utf8(const wchar_t* w)
 
 	int n = WideCharToMultiByte(CP_UTF8, 0, w, -1, NULL, 0, NULL, NULL);
 	if (n <= 0) {
-		fputs("cat: Threre was an error in converting utf16->utf8\n", stdout);
+		fputs("Threre was an error in converting utf16->utf8\n", stdout);
 		return NULL;
 	}
 	char* s = (char*)malloc((size_t)n);
@@ -54,7 +56,7 @@ char* utf16_to_utf8(const wchar_t* w)
 
 	if (WideCharToMultiByte(CP_UTF8, 0, w, -1, s, n, NULL, NULL) == 0) {
 		free(s);
-		fputs("cat: Threre was an error in converting utf16->utf8\n", stdout);
+		fputs(" Threre was an error in converting utf16->utf8\n", stdout);
 
 		return NULL;
 	}
@@ -179,4 +181,12 @@ char* GetValueOfParameter(CommandParsed* command,char name) {
 		}
 	}
 	return NULL;
+}
+
+BOOL checkForStringParameter(char** param, int size, const char* name) {
+	for (int i = 0; i < size; i++) {
+		if (strcmp(param, name) == 0)
+			return TRUE;
+	}
+	return FALSE;
 }

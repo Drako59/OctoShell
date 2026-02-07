@@ -21,6 +21,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "http", "http\http.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommandFuncs", "CommandFuncs\CommandFuncs.vcxproj", "{F4AE3F4A-4EA4-4A05-BD12-CF644D176527}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{BFE29D44-5ECC-4FDF-857C-4D7A4B1D31BF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grep", "grep\grep.vcxproj", "{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -93,6 +97,14 @@ Global
 		{F4AE3F4A-4EA4-4A05-BD12-CF644D176527}.Release|x64.Build.0 = Release|x64
 		{F4AE3F4A-4EA4-4A05-BD12-CF644D176527}.Release|x86.ActiveCfg = Release|Win32
 		{F4AE3F4A-4EA4-4A05-BD12-CF644D176527}.Release|x86.Build.0 = Release|Win32
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Debug|x64.ActiveCfg = Debug|x64
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Debug|x64.Build.0 = Debug|x64
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Debug|x86.ActiveCfg = Debug|Win32
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Debug|x86.Build.0 = Debug|Win32
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Release|x64.ActiveCfg = Release|x64
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Release|x64.Build.0 = Release|x64
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Release|x86.ActiveCfg = Release|Win32
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,6 +113,7 @@ Global
 		{DDEA08C5-A39E-447C-83CF-053D06BA524C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{F612E328-9905-4580-AE18-5F54B2AA6B7B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2DCA350D-C446-4D15-BFAB-DBF7EA87800E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{C2F8F4E7-BF15-4783-8FB0-1CD9685E3788} = {BFE29D44-5ECC-4FDF-857C-4D7A4B1D31BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B351756E-BB6B-432D-BC74-3D80B69747E7}
