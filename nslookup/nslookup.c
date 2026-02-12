@@ -13,6 +13,20 @@
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Iphlpapi.lib")
 
+#define PTR_IPV4_SIZE 28
+
+//need to free the return when finish.
+char* returnPtrIPV4(char* ip) {
+	struct in_addr addr;
+	inet_pton(AF_INET,ip, &addr );
+	unsigned char* addr_bytes= (unsigned char*)&addr.S_un.S_addr;
+	char* reverseIP = (char*)malloc(sizeof(char) * (PTR_IPV4_SIZE + 1));
+	snprintf(reverseIP, PTR_IPV4_SIZE,"%u.%u.%u.%u.in-addr.arpa", addr_bytes[3],addr_bytes[2],addr_bytes[1],addr_bytes[0]);
+
+	return reverseIP;
+
+}
+
 int main(int argc, char** argv)
 {
 
@@ -21,12 +35,12 @@ int main(int argc, char** argv)
 
 	argv = (char*)malloc(argc * sizeof(char));
 
-	argv[1] = "www.google.com";
-	argv[2] = "www.facebook.com";*/
+	argv[1] = "-p";
+	argv[2] = "8.8.8.8";*/
 	//-------------------------------------------
 
 	CommandParsed command;
-	CommandParser_init(&command, argc, argv, "p");
+	CommandParser_init(&command, argc, argv, NULL);
 	
 	char* strParameters = ParameterAsString(command.param,command.param_num);
 
@@ -52,8 +66,17 @@ int main(int argc, char** argv)
 	DNS_RECORD* responseRecords = NULL;
 	DNS_RECORD* pCur;
 	for (int i = 0; i < command.argc; i++) {
-		domainName = command.argv[i];
+		switch (queryType) {
+		case DNS_TYPE_PTR:
+			domainName = returnPtrIPV4(command.argv[i]);
+			break;
+		default:
+			domainName = command.argv[i];
+
+		}
 		domainNameW = utf8_to_utf16(domainName);
+
+
 		if (domainName) {
 			BOOL first = 0;
 			//Loop thorugh responses and print the result
@@ -80,34 +103,43 @@ int main(int argc, char** argv)
 						}
 						break;
 					case(DNS_TYPE_PTR):
-
+						if (!pCur->Data.PTR.pNameHost || !*pCur->Data.PTR.pNameHost) {
+							wprintf(L"\tPTR record without hostname\n");
+							break;
+						}
 						if (!first++) printf("\nDNS RESPONSEs TYPE->PTR:\n");
 						UTF8buffer = utf16_to_utf8(pCur->Data.PTR.pNameHost);
 						if (UTF8buffer == NULL) {
 							printUtfCastError();
 						}
 						else {
-							printf("\t%s-->%s, TTL: %d\n", argv[i], UTF8buffer, pCur->dwTtl);
+							printf("\t%s-->%s, TTL: %d\n", command.argv[i], UTF8buffer, pCur->dwTtl);
 							free(UTF8buffer);
 
 						}
-						free(UTF8buffer);
 						break;
+
 					}
+					
 					
 				}
 
 			}
 			else {
-				printf("nslookup: DNS QUERY FAILED.");
+				printf("nslookup: DNS QUERY FAILED.\n");
 			}
 
 			first = 0;
-
 			DnsRecordListFree(responseRecords, DnsFreeRecordList);
+
 			free(domainNameW);
+			if (domainName && queryType == DNS_TYPE_PTR)
+				free(domainName);
 		}
 		else {
+			if(responseRecords)
+				DnsRecordListFree(responseRecords, DnsFreeRecordList);
+
 			printUtfCastError();
 			
 		}
