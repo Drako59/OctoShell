@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
 	WORD queryType = DNS_TYPE_A;
 	if (strParameters != NULL) {
-		if (strchr(strParameters, 'p')) {
+		if (strchr(strParameters, 'p') || strchr(strParameters, 'P')) {
 			queryType = DNS_TYPE_PTR;
 		}
 	}
