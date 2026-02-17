@@ -135,6 +135,9 @@
     <ClInclude Include="DirectoryFunc.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="Proccess.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
+    <ClInclude Include="resource2.h" />
     <ClInclude Include="stringFuncs.h" />
     <ClInclude Include="TypesDef.h" />
   </ItemGroup>

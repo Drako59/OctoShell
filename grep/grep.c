@@ -148,7 +148,7 @@ int main(int argc, char** argv)
                     size_t tailSize = (patternLength - 1 < bytesRead) ? patternLength - 1 : bytesRead;
                     numberOfBytes = BYTES_BUFFER_SIZE - tailSize;
 
-                    while (bytesRead = fread(buffer + tailSize, sizeof(char), numberOfBytes, grepInfo.files[i]) > 0) {
+                    while ((bytesRead = fread(buffer + tailSize, sizeof(char), numberOfBytes, grepInfo.files[i])) > 0) {
                         if (CmpBytes(buffer, bytesRead + tailSize, grepInfo.text)) {
                             printf("\tFound in: %s\n", grepInfo.filesNames[i]);
                             break;
