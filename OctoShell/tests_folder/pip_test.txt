@@ -1,0 +1,7 @@
+
+-----ping www.google.com-->142.251.157.119------
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 11ms TTL: 64
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 10ms TTL: 64
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 11ms TTL: 64
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 11ms TTL: 64
+avg ping RTT: 10.75ms

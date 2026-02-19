@@ -191,7 +191,7 @@ Command* CopyCommand(Command* command) {
 	command_copy->redirect_out = command->redirect_out;
 	command_copy->stdin_file = command->stdin_file;
 	command_copy->stdout_file = command->stdout_file;
-
+	command_copy->next = NULL;
 
 	return command_copy;
 
@@ -306,16 +306,20 @@ void FreeCommandSepError() {
 
 }
 
+
+
 Command* SepIntoCommand(char* command_str, Command* command) { //to choose if return a command obj or to pass one
 	char* ptr = NULL;
 	char* cmd;
-	int argc = 0;
+	//int argc = 0;
 	HANDLE outFile;
 	HANDLE inFile;
 
 	wchar_t* unicode_transfer;
 	char* sep = " ";
 	char* tok;
+	Command* startCommand = command;
+	command->argc = 0;
 	//seperate into tokens and 
 
 
@@ -325,7 +329,6 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 	cmd = tok;
 	command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
 	strcpy(command->name, cmd);
-	//printf("commandName->%s", command->name); //DEBUG
 	tok = strtokCommand(NULL, sep);
 	//create a command obj
 
@@ -365,16 +368,45 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 		//	}
 		//}
 		//***********************************************************************************
-		command->argv[argc] = (char*)malloc(sizeof(char) * (strlen(tok) + 2));
-		//printf("argc=%d, tok=\"%ls\", dst=%p\n", argc, tok, command->argv[argc]); //DEBUG
-		//printf("tok->%s", tok); //DEBUG
-		strcpy(command->argv[argc], tok);
-		argc++;
+
+
+		if (strcmp(tok, "|") == 0) {
+			tok = strtokCommand(NULL, sep);
+			if (tok == NULL) continue;
+			HANDLE hWrite, hRead;
+			SECURITY_ATTRIBUTES sa = { 0 };
+			sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+			sa.bInheritHandle = TRUE;
+			sa.lpSecurityDescriptor = NULL;
+			CreatePipe(&hRead,&hWrite,&sa, 0);
+
+			command->stdout_file = hWrite;
+			command->redirect_out = TRUE;
+			command->next = (Command*)malloc(sizeof(Command));
+			if (!(command->next)) {
+				printAllocationError();
+				return FALSE;
+			}
+			command = command->next;
+
+			//set the command name:
+			command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
+			strcpy(command->name, tok);
+
+			command->argc = 0;
+			command->stdin_file = hRead;
+			command->redirect_in = TRUE;
+			tok = strtokCommand(NULL, sep);
+			continue;
+		}
+		command->argv[command->argc] = (char*)malloc(sizeof(char) * (strlen(tok) + 2));
+		
+		strcpy(command->argv[command->argc], tok);
+		command->argc++;
 		tok = strtokCommand(NULL, sep);
 
 	}
 
-	command->argc = argc;
 	command->next = NULL;
 
 
@@ -472,7 +504,7 @@ int main()
 		printf("couldn't load stdin and stdout handles\n.");
 		return 1;
 	}
-	BOOL func_match_flag = FALSE;
+	BOOL func_match_flag[COMMAND_MAX_SIZE];
 
 	Command command;
 	Command* cmd_pointer;
@@ -496,14 +528,13 @@ int main()
 	change_dir_Node(path_const); //NEED TO BE OUT OF COMMNET WHEN FINISHED.
 	path = CreatePath(start_path);
 	//************************************
-
 	//wprintf(L"<%s>", path);
 	printf("%s:~$", path);
 	while (fgets(command_str, COMMAND_MAX_SIZE, stdin)) {
+		int commandIndex = 0;
 
 		//Set the redirections
 		Command_init(&command, hStdInputFile, hStdOutFile);
-		func_match_flag = FALSE;
 
 		len = strlen(command_str);
 		if (len > 0 && command_str[len - 1] == '\n')
@@ -516,50 +547,61 @@ int main()
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			printf("Invalid Command\n");
 			printf("%s:~$", path);
+			ExitFree(&command);
 			continue;
 		}
 
 		//wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
 		//call the function according to the command
-		for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-			if (strcmp(funcs_name[i], command.name) == 0 || strcmp(funcs_name_cap[i], command.name) == 0) {
-				//command.argv = &(command.argv[1]);
+		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
+			func_match_flag[commandIndex] = FALSE;
 
-				if (func_arr[i](&command) == FALSE)
+			for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
+				if (strcmp(funcs_name[i], command.name) == 0 || strcmp(funcs_name_cap[i], command.name) == 0) {
+					//command.argv = &(command.argv[1]);
+
+					if (func_arr[i](&command) == FALSE)
+					{
+						printf("There was a problem in function process.\n");
+					};
+					func_match_flag[commandIndex] = TRUE;
+					break;
+				}
+			}
+			commandIndex++;
+		}
+		commandIndex = 0;
+		BOOL skip = FALSE;
+		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
+			if (!func_match_flag[commandIndex]) {
+
+				Command* binCommand = BinCommand(pCur);
+				//printf("%s\n", binCommand->name);
+				//printf("BinCommand->argv[i]->%s", binCommand->argv[0]);
+
+				if (binCommand == NULL)
 				{
-					printf("There was a problem in function process.\n");
-				};
-				func_match_flag = TRUE;
-				break;
+					ExitFree(pCur);
+					skip = TRUE;
+					break;
+				}
+				if (Open_procces(binCommand)) {
+					printf("");
+				}
+				else if (!Open_procces(pCur))
+					printf("Creating process failed.\n");
+				free(binCommand->name);
+				free(binCommand);
 			}
+			commandIndex++;
 		}
-
-		if (!func_match_flag) {
-
-			Command* binCommand = BinCommand(&command);
-			//printf("%s\n", binCommand->name);
-			//printf("BinCommand->argv[i]->%s", binCommand->argv[0]);
-
-			if (binCommand == NULL)
-			{
-				ExitFree(&command);
-				continue;
-			}
-			if (Open_procces(binCommand)) {
-				printf("");
-			}
-			else if (!Open_procces(&command))
-				printf("Creating process failed.\n");
-			free(binCommand->name);
-			free(binCommand);
-
-		}
+		if (skip) continue;
 
 
 
 
 		//free the memory that the command structure used
-
+		
 		ExitFree(&command);
 
 
