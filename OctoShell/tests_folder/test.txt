@@ -1,12 +1,33 @@
-
------ping www.google.com-->142.250.75.132------
-REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 13ms TTL: 64
-REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 10ms TTL: 64
-REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 9ms TTL: 64
-REPLAY ADDR: www.google.com-->142.250.75.132 RTT: 10ms TTL: 64
-avg ping RTT: 10.50ms
-t
+cat
+change.txt
+CopyFuncTest.txt
+hello.txt
+hello_ofek_hello.txt
+hi
+noteixt
+nothing
+oompa_loompa.txt
+ping
+pingDNS.txt
+ping_test.txt
+pipe_test.txt
+pip_test.txt
+test
+test.txt
+test4
+test4.txt
+test49.txt
+test5.txt
+test56.txt
 test69.txt
+tests_files
+testtest2.txt
+test_color.txt
+test_dns_ptr.txt
+test_ls.txt
+text.txt
+
+txt
 tests_files
 testtest2.txt
 test_ls.txt

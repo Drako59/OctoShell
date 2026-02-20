@@ -1,0 +1,3 @@
+
+DNS RESPONSEs TYPE->A:
+	www.google.com-->142.250.75.68, TTL: 48

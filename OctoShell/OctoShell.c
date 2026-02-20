@@ -5,12 +5,22 @@
 #include "includes.h"
 
 #define ESC "\x1b"
+#define ESC_END "\x1b[0m"
+#define ESC_FORGROUND_END "\x1b[39m"
 
-//typedef struct DirectoryNode {
-//	const wchar_t* name;
-//	struct DirectoryNode* next;
-//
-//} DirectoryNode;
+void SetThemeColors() {
+	//printf("\x1b[48;2;48;10;36m");      // רקע
+	//printf("\x1b[38;2;248;248;242m");  // טקסט
+	printf("\x1b[48;2;48;10;36m");
+	printf("\x1b[38;2;248;248;242m");
+	printf("\x1b[2J\x1b[H");
+	////printf("Ubuntu Style Terminal\n");
+}
+
+void EndThemeColors() {
+	printf("\x1b[0m");                 // reset
+
+}
 
 void printOctopus() {
 	//	printf(  
@@ -483,9 +493,7 @@ Command* BinCommand(Command* command) {
 	}
 	strcpy(bin_path, function_bin);
 	strcat(bin_path, copy_command->name);
-	//printf("%s\n", copy_command->name); //DEBUG
 
-	//printf("%s\n", bin_path); //DEBUG
 	free(copy_command->name);
 	copy_command->name = bin_path;
 
@@ -497,8 +505,10 @@ Command* BinCommand(Command* command) {
 
 int main()
 {
-	//printf("%d\n", sizeof(char*));
+	
 	enable_ansi_colors();
+	
+	//SetThemeColors();
 	printOctopus();
 	wprintf(L"Welcome to OctoShell 🐙\n");
 	UINT original_cp = GetConsoleOutputCP(); // Save original code page
@@ -539,8 +549,7 @@ int main()
 	change_dir_Node(path_const); //NEED TO BE OUT OF COMMNET WHEN FINISHED.
 	path = CreatePath(start_path);
 	//************************************
-	//wprintf(L"<%s>", path);
-	printf("%s:~$ ", path);
+	printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 	while (fgets(command_str, COMMAND_MAX_SIZE, stdin)) {
 		int commandIndex = 0;
 
@@ -557,12 +566,11 @@ int main()
 
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			printf("Invalid Command\n");
-			printf("%s:~$ ", path);
+			printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 			ExitFree(&command);
 			continue;
 		}
 
-		//wprintf(L"command->Name: %s, command->argv: %s , command->argc: %d\n", command.name, command.argv[0],command.argc); //DEBUG
 		//call the function according to the command
 		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
 			func_match_flag[commandIndex] = FALSE;
@@ -588,8 +596,6 @@ int main()
 			if (!func_match_flag[commandIndex] && !pCur->built_in) {
 
 				Command* binCommand = BinCommand(pCur);
-				//printf("%s\n", binCommand->name);
-				//printf("BinCommand->argv[i]->%s", binCommand->argv[0]);
 
 				if (binCommand == NULL)
 				{
@@ -621,13 +627,13 @@ int main()
 
 
 
-		printf("%s:~$ ", path);
+		printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 
 	}
 
 
 	freePathNode(start_path);
-
+	EndThemeColors();
 	printf("success");
 
 	return 0;
