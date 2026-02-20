@@ -12,7 +12,6 @@ BOOL echo(Command* command) {
 	}
 
 	for (int i = 0; i < command->argc; i++) {
-		//printf("here");
 		size += strnlen(command->argv[i], MAX_PATH_SIZE) + 1;
 	}
 	size += 1;
@@ -25,10 +24,7 @@ BOOL echo(Command* command) {
 
 	for (int i = 1; i < command->argc; i++) {
 		strcat(buffer, " ");
-		
 		strncat(buffer, command->argv[i], size2);
-		
-
 		size2 -= strnlen(command->argv[i], MAX_PATH_SIZE) + 1;
 	}
 	strncat(buffer, "\n", size2);
@@ -38,8 +34,14 @@ BOOL echo(Command* command) {
 	WriteFile(command->stdout_file, bom, size, &written, NULL);*/
 
 	WriteFile(command->stdout_file, buffer, size - 1, &written, NULL);
-	//wprintf(L"%s", buffer);
-
+	if (command->redirect_in) {
+		CloseHandle(command->stdin_file);
+		command->redirect_in = FALSE;
+	}
+	if (command->redirect_out) {
+		CloseHandle(command->stdout_file);
+		command->redirect_out = FALSE;
+	}
 	free(buffer);
 	return written == (size  - 1);
 }

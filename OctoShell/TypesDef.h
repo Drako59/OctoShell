@@ -10,6 +10,7 @@
 typedef struct Command {
 	char* name;
 	int argc;
+	BOOL built_in;
 	char* argv[COMMAND_MAX_SIZE];
 	BOOL redirect_in;
 	BOOL redirect_out;

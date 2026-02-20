@@ -20,6 +20,14 @@ BOOL clear(Command* command) {
 	int written;
 	WriteFile(command->stdout_file, sequence, size, &written, NULL);
 
+	if (command->redirect_in) {
+		CloseHandle(command->stdin_file);
+		command->redirect_in = FALSE;
+	}
+	if (command->redirect_out) {
+		CloseHandle(command->stdout_file);
+		command->redirect_out = FALSE;
+	}
 	return written == size;
 }
 
@@ -34,6 +42,14 @@ BOOL pwd(Command* command) {
 	
 	WriteFile(command->stdout_file, buffer, size, &written, NULL);
 	free(buffer);
+	if (command->redirect_in) {
+		CloseHandle(command->stdin_file);
+		command->redirect_in = FALSE;
+	}
+	if (command->redirect_out) {
+		CloseHandle(command->stdout_file);
+		command->redirect_out = FALSE;
+	}
 	return size == written;
 }
 
@@ -63,6 +79,14 @@ BOOL cd(Command* command ) {
 		change_dir_Node(test);*/
 		free(path);
 		path = CreatePath(start_path);
+		if (command->redirect_in) {
+			CloseHandle(command->stdin_file);
+			command->redirect_in = FALSE;
+		}
+		if (command->redirect_out) {
+			CloseHandle(command->stdout_file);
+			command->redirect_out = FALSE;
+		}
 	}
 	else {
 		printf("Ivalid parameters\n");

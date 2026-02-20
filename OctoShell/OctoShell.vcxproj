@@ -125,7 +125,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DirectoryFunc.c" />
-    <ClCompile Include="Linux_functions_files.c" />
     <ClCompile Include="OctoShell.c" />
     <ClCompile Include="Proccess.c" />
     <ClCompile Include="stringFuncs.c" />

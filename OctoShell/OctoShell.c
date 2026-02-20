@@ -170,7 +170,13 @@ char* CreatePath(DirectoryNode* start) {
 }
 
 
-
+void Command_init(Command* command, HANDLE hStdInputFile, HANDLE hStdOutFile) {
+	command->stdin_file = hStdInputFile;
+	command->stdout_file = hStdOutFile;
+	command->redirect_in = FALSE;
+	command->redirect_out = FALSE;
+	command->built_in = FALSE;
+}
 
 //create a copy of the command structure. (deepcopy only the name).
 Command* CopyCommand(Command* command) {
@@ -315,6 +321,10 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 	HANDLE outFile;
 	HANDLE inFile;
 
+	HANDLE hStdOutFile = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE hStdInputFile = GetStdHandle(STD_INPUT_HANDLE);
+
+
 	wchar_t* unicode_transfer;
 	char* sep = " ";
 	char* tok;
@@ -378,7 +388,12 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 			sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 			sa.bInheritHandle = TRUE;
 			sa.lpSecurityDescriptor = NULL;
-			CreatePipe(&hRead,&hWrite,&sa, 0);
+			if (!CreatePipe(&hRead, &hWrite, &sa, 0))
+			{
+				printf("OctoShell: Create pipe failed....");
+				return FALSE;
+
+			}
 
 			command->stdout_file = hWrite;
 			command->redirect_out = TRUE;
@@ -388,11 +403,12 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 				return FALSE;
 			}
 			command = command->next;
+			Command_init(command, hStdInputFile, hStdOutFile);
 
 			//set the command name:
 			command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
 			strcpy(command->name, tok);
-
+			command->redirect_out = FALSE;
 			command->argc = 0;
 			command->stdin_file = hRead;
 			command->redirect_in = TRUE;
@@ -477,12 +493,7 @@ Command* BinCommand(Command* command) {
 }
 
 
-void Command_init(Command* command, HANDLE hStdInputFile, HANDLE hStdOutFile) {
-	command->stdin_file = hStdInputFile;
-	command->stdout_file = hStdOutFile;
-	command->redirect_in = FALSE;
-	command->redirect_out = FALSE;
-}
+
 
 int main()
 {
@@ -529,7 +540,7 @@ int main()
 	path = CreatePath(start_path);
 	//************************************
 	//wprintf(L"<%s>", path);
-	printf("%s:~$", path);
+	printf("%s:~$ ", path);
 	while (fgets(command_str, COMMAND_MAX_SIZE, stdin)) {
 		int commandIndex = 0;
 
@@ -546,7 +557,7 @@ int main()
 
 		if (SepIntoCommand(command_str, &command) == NULL) {
 			printf("Invalid Command\n");
-			printf("%s:~$", path);
+			printf("%s:~$ ", path);
 			ExitFree(&command);
 			continue;
 		}
@@ -557,14 +568,15 @@ int main()
 			func_match_flag[commandIndex] = FALSE;
 
 			for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-				if (strcmp(funcs_name[i], command.name) == 0 || strcmp(funcs_name_cap[i], command.name) == 0) {
+				if (strcmp(funcs_name[i], pCur->name) == 0 || strcmp(funcs_name_cap[i], pCur->name) == 0) {
 					//command.argv = &(command.argv[1]);
 
-					if (func_arr[i](&command) == FALSE)
+					if (func_arr[i](pCur) == FALSE)
 					{
 						printf("There was a problem in function process.\n");
 					};
 					func_match_flag[commandIndex] = TRUE;
+					pCur->built_in = TRUE;
 					break;
 				}
 			}
@@ -573,7 +585,7 @@ int main()
 		commandIndex = 0;
 		BOOL skip = FALSE;
 		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
-			if (!func_match_flag[commandIndex]) {
+			if (!func_match_flag[commandIndex] && !pCur->built_in) {
 
 				Command* binCommand = BinCommand(pCur);
 				//printf("%s\n", binCommand->name);
@@ -586,7 +598,10 @@ int main()
 					break;
 				}
 				if (Open_procces(binCommand)) {
+					if (pCur->redirect_in) pCur->redirect_in = FALSE;
+					if (pCur->redirect_out) pCur->redirect_out = FALSE;
 					printf("");
+
 				}
 				else if (!Open_procces(pCur))
 					printf("Creating process failed.\n");
@@ -606,7 +621,7 @@ int main()
 
 
 
-		printf("%s:~$", path);
+		printf("%s:~$ ", path);
 
 	}
 

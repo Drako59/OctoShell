@@ -27,9 +27,6 @@
     <ClCompile Include="Proccess.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Linux_functions_files.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DirectoryFunc.c">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -52,7 +52,7 @@ BOOL Open_procces(Command* command ) {
 
 	//Allocate memory for the command to set as a string
 	//printf("%d\n", size);
-	char* para = (wchar_t*)malloc(size * sizeof(wchar_t));
+	wchar_t* para = (wchar_t*)malloc(size * sizeof(wchar_t));
 
 	if (para == NULL) {
 		printf("Malloc failed. no availible space in heap.\n");
@@ -108,9 +108,18 @@ BOOL Open_procces(Command* command ) {
 		return flag;
 	}
 
+	
 	//Wait for the procees to finish before contuine and ending the function
 	WaitForSingleObject(pi.hProcess, INFINITE);
 
+	if (command->redirect_in) {
+		command->redirect_in = FALSE;
+		CloseHandle(command->stdin_file);
+	}
+	if (command->redirect_out) {
+		command->redirect_out = FALSE;
+		CloseHandle(command->stdout_file);
+	}
 	//printf("%d\n", flag );	    //DEBUG
 	//printf("Here");				//DEBUG		
 

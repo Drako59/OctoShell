@@ -171,6 +171,13 @@ int main(int argc, char** argv)
 
 	//printf("%s\n", argv[1]);
 
+	//DWORD type = GetFileType(GetStdHandle(STD_INPUT_HANDLE));
+	//if (type == FILE_TYPE_PIPE) {
+	//	printf("STDIN is a pipe\n");
+	//}
+	//printf("STDIN TYPE: %lu\n", type);
+
+	//printf("here");
 	CommandParsed command;
 
 
