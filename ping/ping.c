@@ -102,6 +102,7 @@ int main(int argc, char** argv)
 		char addrStr[INET6_ADDRSTRLEN];
 		inet_ntop(AF_INET, &(addr->sin_addr), addrStr, sizeof(addrStr));
 		printf("\n-----ping %s-->%s------\n", command.argv[j], addrStr);
+		fflush(stdout);
 
 
 
@@ -115,9 +116,11 @@ int main(int argc, char** argv)
 
 			if (reply->Status == IP_REQ_TIMED_OUT) {
 				printf("Ping request reached his timeout......\n");
+				fflush(stdout);
 			}
 			else if (reply->Status == IP_TTL_EXPIRED_TRANSIT) {
 				printf("ping reached his hops limit and got thorwed away.\n");
+				fflush(stdout);
 
 			}
 			else if (reply->Status == IP_SUCCESS) {
@@ -129,9 +132,11 @@ int main(int argc, char** argv)
 				inet_ntop(AF_INET, &replayAddr, addrReplayStr, sizeof(addrReplayStr));
 
 				printf("REPLAY ADDR: %s-->%s RTT: %lums TTL: %u\n", command.argv[j], addrReplayStr, reply->RoundTripTime, options.Ttl);
+				fflush(stdout);
 			}
 			else {
 				printf("ping failed :(\n");
+				fflush(stdout);
 			}
 			Sleep(1000);
 

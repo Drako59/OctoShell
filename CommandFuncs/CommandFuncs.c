@@ -12,11 +12,11 @@
 
 
 
-void printUtfCastError() {
+inline void printUtfCastError() {
 	fputs("There was error in the casting of utf string.\n",stdout);
 }
 
-void printAllocError(void) {
+inline void printAllocError(void) {
 	fputs("CommandParser: Allocation failed, maybe next time when you will have more ram avilible....\n", stdout);
 }
 

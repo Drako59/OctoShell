@@ -470,7 +470,9 @@ BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear };
 char* funcs_name[] = { "cd","pwd", "echo","clear" };
 char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR" };
 DirectoryNode* start_path;
-
+//HANDLE* threads = NULL;
+//HANDLE* processes = NULL;
+//int processesNum = 0;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
 char command_str[COMMAND_MAX_SIZE];
@@ -505,7 +507,11 @@ Command* BinCommand(Command* command) {
 
 int main()
 {
-	
+	AllocResources procResources;
+	procResources.si = NULL;
+	procResources.pi = NULL;
+	procResources.processes = NULL;
+	procResources.processesNum = 0;
 	enable_ansi_colors();
 	
 	//SetThemeColors();
@@ -594,28 +600,31 @@ int main()
 		BOOL skip = FALSE;
 		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
 			if (!func_match_flag[commandIndex] && !pCur->built_in) {
-
 				Command* binCommand = BinCommand(pCur);
 
 				if (binCommand == NULL)
 				{
+
 					ExitFree(pCur);
 					skip = TRUE;
 					break;
 				}
-				if (Open_procces(binCommand)) {
+				if (Open_procces(binCommand,&procResources)) {
 					if (pCur->redirect_in) pCur->redirect_in = FALSE;
 					if (pCur->redirect_out) pCur->redirect_out = FALSE;
 					printf("");
 
 				}
-				else if (!Open_procces(pCur))
+				else if (!Open_procces(pCur, &procResources)) {
 					printf("Creating process failed.\n");
+				}
 				free(binCommand->name);
 				free(binCommand);
 			}
 			commandIndex++;
 		}
+
+		EndProcesses(&procResources);
 		if (skip) continue;
 
 

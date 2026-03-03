@@ -3,13 +3,14 @@
 typedef STARTUPINFOW STARTUPINFO;
 #endif
 
+#include "TypesDef.h"
 
-
+//extern int processesNum;
+//extern HANDLE* processes;
+//extern HANDLE* threads;
 BOOL TerminateProcces(int argc,wchar_t* argv[]);
 
-//C:\Users\ayele\source\repos\OctoShell\x64\Debug
 
-//C:\Users\ayele\source\repos\printHI\x64\Debug
 
 //Debug funtion that meant to print a matrix 
 void print_matrix(wchar_t* matrix[], int size) {
@@ -20,19 +21,49 @@ void print_matrix(wchar_t* matrix[], int size) {
 }
 
 //Open procces functino
-BOOL Open_procces(Command* command ) {
+BOOL Open_procces(Command* command, AllocResources* resources ) {
 		
+
+	HANDLE* newProcesses = (HANDLE*)realloc(resources->processes, sizeof(HANDLE) * (resources->processesNum + 1));
+
+	if (NULL == newProcesses) { return FALSE; }
+
+	resources->processes = newProcesses;
+
+	STARTUPINFO* newSi = (STARTUPINFO*)realloc(resources->si, sizeof(STARTUPINFO) * (resources->processesNum + 1));
+
+	if (NULL == newSi) { return FALSE; }
+
+	resources->si = newSi;
+
+	PROCESS_INFORMATION* newPi = (PROCESS_INFORMATION*)realloc(resources->pi, sizeof(PROCESS_INFORMATION) * (resources->processesNum + 1));
+
+	if (NULL == newPi) { return FALSE; }
+
+	resources->pi = newPi;
+
+
+	int i = resources->processesNum;
+	/*HANDLE* newThreads = (HANDLE*)realloc(threads, sizeof(HANDLE) * (processesNum + 1));
+
+	if (NULL == newThreads) { return FALSE; }
+
+	threads = newThreads;*/
+
+
 	wchar_t* unicode_buffer;
 	char** argv = command->argv;
 	int argc = command->argc;
-	//print_matrix(argv, argc);	//DEBUG
-	//printf("argc: %d", argc);//DEBUG
-	//set the variable we goonaa use to open the proces
-	STARTUPINFO si;
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-	si.dwFlags = STARTF_USESTDHANDLES;
-	PROCESS_INFORMATION pi;
+	//set the variable we are going to  use to open the process
+	//STARTUPINFO* si = (STARTUPINFO*)malloc(sizeof(STARTUPINFO));
+
+	/*if (NULL == si) return FALSE;
+
+	if (si == NULL) return FALSE;*/
+	ZeroMemory(&(resources->si[i]), sizeof(resources->si[i]));
+	resources->si[i].cb = sizeof(resources->si[i]);
+	resources->si[i].dwFlags = STARTF_USESTDHANDLES;
+	//PROCESS_INFORMATION* pi = (PROCESS_INFORMATION*)malloc(sizeof(PROCESS_INFORMATION));
 	
 	char* path = command->name;
 	
@@ -40,8 +71,6 @@ BOOL Open_procces(Command* command ) {
 		argv = NULL;
 	}
 
-	//printf("%s\n", path);			//DEBUG
-	//wprintf(L"%ls", path);		//DEBUG	
 
 	//calculate the size of the coomand to pass
 	int size = strlen(path) +  3 + argc ;
@@ -51,7 +80,6 @@ BOOL Open_procces(Command* command ) {
 	}
 
 	//Allocate memory for the command to set as a string
-	//printf("%d\n", size);
 	wchar_t* para = (wchar_t*)malloc(size * sizeof(wchar_t));
 
 	if (para == NULL) {
@@ -68,11 +96,9 @@ BOOL Open_procces(Command* command ) {
 	free(unicode_buffer);
 	wcscat(para, L"\"");
 
-	//printf("argc: %d\n", argc); //DEBUG
 	for (int i = 0; i < argc; i++) {
 		if (0 == i)
 		{
-			//printf("HERE");//DEBUG
 			wcscat(para, L" ");
 			unicode_buffer = utf8_to_utf16(argv[i]);
 			wcscat(para, unicode_buffer);
@@ -81,7 +107,6 @@ BOOL Open_procces(Command* command ) {
 			
 		}
 		else {
-			//printf("HERE");//DEBUG
 			unicode_buffer = utf8_to_utf16(argv[i]);
 
 			wcscat(para, L" ");
@@ -90,27 +115,32 @@ BOOL Open_procces(Command* command ) {
 
 		}
 	}
-	//wprintf(L"PARA: %s\n", para); //DEBUG
-	//printf("%ls\n", para);		//DEBUG
 	
 	//Create the procces
 	SetHandleInformation(command->stdin_file, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
 	SetHandleInformation(command->stdout_file, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-	si.hStdInput = command->stdin_file;
-	si.hStdOutput = command->stdout_file;
+	resources->si[i].hStdInput = command->stdin_file;
+	resources->si[i].hStdOutput = command->stdout_file;
 
-	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, TRUE, 0, NULL, NULL, &(resources->si[i]), &(resources->pi[i]));
 	if (!flag) {
-		//printf("Creating process failed.\n");
 		free(para);
-		CloseHandle(pi.hThread);
-		CloseHandle(pi.hProcess);
+		CloseHandle(resources->pi[i].hThread);
+		CloseHandle(resources->pi[i].hProcess);
+		
 		return flag;
 	}
+	free(para);
 
-	
+	resources->processes[i] = resources->pi[i].hProcess;
+
+	//resources->pi[resources->processesNum - 1] = pi;
+	/*resources->si[resources->processesNum - 1] = si;*/
+
+	//resources.threads[resources.processesNum - 1] = pi->hThread;
+	 
 	//Wait for the procees to finish before contuine and ending the function
-	WaitForSingleObject(pi.hProcess, INFINITE);
+	//WaitForSingleObject(pi->hProcess, INFINITE);
 
 	if (command->redirect_in) {
 		command->redirect_in = FALSE;
@@ -120,12 +150,29 @@ BOOL Open_procces(Command* command ) {
 		command->redirect_out = FALSE;
 		CloseHandle(command->stdout_file);
 	}
-	//printf("%d\n", flag );	    //DEBUG
-	//printf("Here");				//DEBUG		
 
 	//free the memory we use and close the handle to prevent memory leaks
-	free(para);
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
+	/*CloseHandle(pi->hThread);
+	CloseHandle(pi->hProcess);*/
+	resources->processesNum++;
 	return flag;
+}
+
+BOOL EndProcesses(AllocResources* resources) {
+	WaitForMultipleObjects(resources->processesNum, resources->processes, TRUE, INFINITE);
+	for (int i = 0; i < resources->processesNum; i++) {
+		CloseHandle(resources->pi[i].hThread);
+		CloseHandle(resources->pi[i].hProcess);
+		/*free(resources->si[i]);
+		free(resources->pi[i]);*/
+
+	}
+	resources->processesNum = 0;
+	if (resources->processes != NULL) { 
+		free(resources->processes); 
+	resources->processes = NULL; }
+
+	if (resources->pi != NULL) { free(resources->pi); resources->pi = NULL; }
+	if (resources->si != NULL) { free(resources->si); resources->si = NULL; }
+
 }

@@ -52,7 +52,6 @@ extern DirectoryNode* path_pointer;
 #endif
 
 #ifdef _WIN32
-#include <windows.h>
 static void enable_ansi_colors(void) {
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (hOut == INVALID_HANDLE_VALUE) return;
@@ -63,4 +62,16 @@ static void enable_ansi_colors(void) {
 	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(hOut, mode);
 }
+#endif
+
+#ifndef FREE_STRUCTURE
+#define FREE_STRUCTURE
+typedef struct AllocResources {
+	
+	PROCESS_INFORMATION* pi;
+	STARTUPINFO* si;
+	HANDLE* processes;
+	int processesNum;
+} AllocResources;
+
 #endif
