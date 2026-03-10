@@ -72,6 +72,16 @@ void printOctopus() {
 	);
 }
 
+//DEBUG FUNCTIONS
+void printEnvVars(EnvVar* vars) {
+	for (EnvVar* pCur = vars; pCur != NULL; pCur = pCur->nextVar)
+	{
+		printf("%s=%s\n", pCur->name,pCur->value);
+	}
+}
+
+//
+//Alocation error
 void printAllocationError(void) {
 	printf("OctoShell: There is no available space in heap. try to upgrade your pc maybe?(pls?) :(\n");
 
@@ -89,6 +99,31 @@ void FreeCommand(Command* cmd_pointer) {
 		}
 		cmd_pointer = cmd_pointer->next;
 	}
+}
+
+char* utf16_to_utf8(const wchar_t* w)
+{
+	if (!w) return NULL;
+
+	int n = WideCharToMultiByte(CP_UTF8, 0, w, -1, NULL, 0, NULL, NULL);
+	if (n <= 0) {
+		fputs("Threre was an error in converting utf16->utf8\n", stdout);
+		return NULL;
+	}
+	char* s = (char*)malloc((size_t)n);
+	if (!s) {
+		printAllocationError();
+		return NULL;
+	}
+
+	if (WideCharToMultiByte(CP_UTF8, 0, w, -1, s, n, NULL, NULL) == 0) {
+		free(s);
+		fputs(" Threre was an error in converting utf16->utf8\n", stdout);
+
+		return NULL;
+	}
+
+	return s;
 }
 
 wchar_t* utf8_to_utf16(const char* s)
@@ -113,7 +148,6 @@ wchar_t* utf8_to_utf16(const char* s)
 //free the memeory that was allcoated the nodes of the path and the allocated memeory for it's content.
 void freePathNode(DirectoryNode* pointer) {
 	DirectoryNode* before_node;
-	//printf("Here");
 
 	int first = 1;
 	while ((pointer != NULL)) {
@@ -139,7 +173,7 @@ int size_of_path(DirectoryNode* start)
 	return size + 1;
 }
 
-
+//copy a string from heap and return a new pointer to heap with the same initilize value
 BOOL StrHeapCpy(char** pDst, char* pSrc) {
 	if (!pSrc) {
 		*pDst = NULL;
@@ -179,7 +213,7 @@ char* CreatePath(DirectoryNode* start) {
 	return path;
 }
 
-
+//intilize the command structure
 void Command_init(Command* command, HANDLE hStdInputFile, HANDLE hStdOutFile) {
 	command->stdin_file = hStdInputFile;
 	command->stdout_file = hStdOutFile;
@@ -271,18 +305,22 @@ enum QState {
 
 
 
-
-char* strtokCommand(char* command_str, char* sep) {
+//Sperate function by " " which inspierd from strtok. but build for shell's commands
+char* strtokCommand(char* command_str, const char* sep) {
 	
-
 	BOOL insideQuote = FALSE;
 	BOOL insideDoubleQuote = FALSE;
 	static char* command = NULL;
 	if (command_str != NULL)
 		command = command_str;
-	char* copyCommand;
+	while (command != NULL && *command && strchr(sep, *command))
+	{
+		command++;
+	}
+	char* copyCommand = NULL;
 	if (command != NULL) {
-		for (int i = 0; i < strlen(command); i++) {
+		int debug = strlen(command);
+		for (int i = 0; i < debug; i++) {
 			if (!insideQuote && command[i] == '"' && !insideDoubleQuote)
 				insideDoubleQuote = TRUE;
 			else if (!insideQuote && command[i] == '"' && insideDoubleQuote) {
@@ -298,9 +336,24 @@ char* strtokCommand(char* command_str, char* sep) {
 			if (strchr(sep, command[i]) && !insideDoubleQuote && !insideQuote) {
 				command[i] = '\0';
 				copyCommand = command;
+				
+				
+				//if (*copyCommand != '\0') {
+					//i = 0;
 				command = &(command[i + 1]);
+
+					/*while (*command != '\0' && strchr(sep, *command)) {
+						char* check = strchr(sep, *command);
+						command[0] = '\0';
+						command = &(command[1]);
+
+					}*/
+
+					//if (*command == '\0') command = NULL;
 				return copyCommand;
+				//}
 			}
+			
 		}
 
 		if (insideDoubleQuote || insideQuote) {
@@ -345,16 +398,30 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 
 	//add a redirect in
 	tok = strtokCommand(command_str, sep);
+	
 	if (!tok) return NULL;
+	
 	cmd = tok;
-	command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
-	strcpy(command->name, cmd);
+
+	int name_length = (strlen(tok) + 5);
+	command->name = (char*)malloc(sizeof(char) * name_length);
+
+	//check malloc!!!!
+
+	//
+	if (!IsExe(cmd))
+		snprintf(command->name, name_length, "%s.exe", cmd);
+	else
+		snprintf(command->name, name_length, "%s", cmd);
+
+	//strcpy(command->name, cmd);
 	tok = strtokCommand(NULL, sep);
 	//create a command obj
 
 
 	//parsing into the command.
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
+		
 		if (strncmp(tok, ">", COMMAND_MAX_SIZE) == 0) {
 			tok = strtokCommand(NULL, sep);
 			if (tok == NULL)
@@ -363,6 +430,7 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 			tok = strtokCommand(NULL, sep);
 			continue;
 		}
+		
 		//********************************************************************************** ->>>>>> REDIRECT INPUT NEED TO FIX!!!!
 		//else if (strncmp(tok, "<", COMMAND_MAX_SIZE) == 0) {
 		//	if (argc == 0) {
@@ -416,8 +484,16 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 			Command_init(command, hStdInputFile, hStdOutFile);
 
 			//set the command name:
-			command->name = (char*)malloc(sizeof(char) * (strlen(tok) + 1));
-			strcpy(command->name, tok);
+			name_length = (strlen(tok) + 5);
+			command->name = (char*)malloc(sizeof(char) * name_length);// the size + null + .exe
+			//check for succes fo malloc!!!!
+
+			//
+			if(!IsExe(tok))
+				snprintf(command->name, name_length,"%s.exe", tok);
+			else
+				snprintf(command->name, name_length, "%s", tok);
+
 			command->redirect_out = FALSE;
 			command->argc = 0;
 			command->stdin_file = hRead;
@@ -426,7 +502,9 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 			continue;
 		}
 		command->argv[command->argc] = (char*)malloc(sizeof(char) * (strlen(tok) + 2));
-		
+		//check for succes fo malloc!!!!
+
+			//
 		strcpy(command->argv[command->argc], tok);
 		command->argc++;
 		tok = strtokCommand(NULL, sep);
@@ -459,7 +537,86 @@ BOOL AddString(char** src, char* dst) {
 	return TRUE;
 }
 
+BOOL CheckIfFileExist(const char* path) {
+	if (PathFileExistsA(path)) {
+		return TRUE;
+	}
 
+	return FALSE;
+}
+BOOL IsExe(const char* path) {
+	int path_length = strlen(path);
+	if (path < 5) return FALSE;
+	const char* path_pointer = path + path_length - 4;
+	return strncmp(path_pointer, ".exe" , 4) == 0 || strncmp(path_pointer, ".EXE" , 4) == 0;
+
+}
+
+char* GetShellFilePath(int type) { //type: 0-> dir path, 1 -> dir + bin path;
+	char* octoshell_bin_dir[MAX_PATH];
+	char* path = NULL;
+	size_t length;
+	GetModuleFileNameA(NULL, octoshell_bin_dir, MAX_PATH);
+	PathRemoveFileSpecA(octoshell_bin_dir);
+	switch (type) {
+	case 0:
+		length = (strlen(octoshell_bin_dir) + 1);
+		path = (char*)malloc(sizeof(char) * length);
+		if (path == NULL) return NULL;
+		snprintf(path, length, "%s", octoshell_bin_dir);
+		break;
+	case 1:
+		length = (strlen(octoshell_bin_dir) + strlen("\\bin\\") + 1);
+		path = (char*)malloc(sizeof(char) * length);
+		if (path == NULL) return NULL;
+		snprintf(path,length,"%s\\bin\\", octoshell_bin_dir);
+		break;
+	}
+	return path;
+}
+
+BOOL LoadWindowsEnvVars(EnvVar* varList) {
+	wchar_t* PWStr;
+	wchar_t* content = NULL;
+	wchar_t* env = GetEnvironmentStringsW();
+	wchar_t* current = env;
+	size_t skip_amount  = 0;
+	while (*current) {
+		skip_amount = wcslen(current) + 1;
+		wchar_t* equal_sign = wcschr(current, L'=');
+		if (equal_sign != NULL) {
+			varList->nextVar = (EnvVar*)malloc(sizeof(EnvVar));
+			if (!(varList->nextVar)) {
+				FreeEnvironmentStrings(env);
+				return  FALSE;
+			}
+			varList = varList->nextVar;
+			PWStr = current;
+			*equal_sign = L'\0';
+
+			varList->name = utf16_to_utf8(PWStr);
+			if (varList->name == NULL) {
+				free(varList);
+				return FALSE;
+			}
+			*equal_sign = L'=';
+
+			PWStr = equal_sign + 1;
+			varList->value = utf16_to_utf8(PWStr);
+			if (varList->value == NULL) {
+				free(varList->name);
+				free(varList);
+
+				return FALSE;
+			}
+		}
+		current += skip_amount;
+
+	}
+	varList->nextVar = NULL;
+	FreeEnvironmentStringsW(env);
+	return TRUE;
+}
 
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
@@ -470,31 +627,30 @@ BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear };
 char* funcs_name[] = { "cd","pwd", "echo","clear" };
 char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR" };
 DirectoryNode* start_path;
-//HANDLE* threads = NULL;
-//HANDLE* processes = NULL;
-//int processesNum = 0;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
 char command_str[COMMAND_MAX_SIZE];
-char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Func_Bin\\";
+char* function_bin;  
+//char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Debug\\bin\\";
 char* path;
 //--------------------------------------------------------------------------------------------------------------------------------------
 //function that uses the global varibals
 
-Command* BinCommand(Command* command) {
+Command* BinCommand_init(Command* command) {
 	Command* copy_command = CopyCommand(command);
 
 	if (copy_command == NULL)
 		return NULL;
-
-	char* bin_path = (char*)malloc((strlen(function_bin) + strlen(copy_command->name) + 1) * sizeof(char));
+	size_t path_length = (strlen(function_bin) + strlen(copy_command->name) + 1 );
+	char* bin_path = (char*)malloc(path_length * sizeof(char));
 	if (bin_path == NULL) {
 		printAllocationError();
 		FreeCommand(copy_command);
 		return NULL;
 	}
-	strcpy(bin_path, function_bin);
-	strcat(bin_path, copy_command->name);
+	snprintf(bin_path, path_length,"%s%s", function_bin, copy_command->name); //functions folder path, command_name
+	/*strcpy(bin_path, function_bin);
+	strcat(bin_path, copy_command->name);*/
 
 	free(copy_command->name);
 	copy_command->name = bin_path;
@@ -507,6 +663,13 @@ Command* BinCommand(Command* command) {
 
 int main()
 {
+	
+
+	function_bin = GetShellFilePath(1);
+	EnvVar envVars = { 0 };
+	envVars.name = "OctoShell";
+	envVars.value = GetShellFilePath(0);
+	LoadWindowsEnvVars(&envVars);
 	AllocResources procResources;
 	procResources.si = NULL;
 	procResources.pi = NULL;
@@ -580,9 +743,9 @@ int main()
 		//call the function according to the command
 		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
 			func_match_flag[commandIndex] = FALSE;
-
+			size_t command_length = strlen(pCur->name);
 			for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-				if (strcmp(funcs_name[i], pCur->name) == 0 || strcmp(funcs_name_cap[i], pCur->name) == 0) {
+				if (strncmp(funcs_name[i], pCur->name, command_length - 4) == 0 || strncmp(funcs_name_cap[i], pCur->name, command_length - 4) == 0) {
 					//command.argv = &(command.argv[1]);
 
 					if (func_arr[i](pCur) == FALSE)
@@ -600,7 +763,7 @@ int main()
 		BOOL skip = FALSE;
 		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
 			if (!func_match_flag[commandIndex] && !pCur->built_in) {
-				Command* binCommand = BinCommand(pCur);
+				Command* binCommand = BinCommand_init(pCur);
 
 				if (binCommand == NULL)
 				{
@@ -609,20 +772,31 @@ int main()
 					skip = TRUE;
 					break;
 				}
-				if (Open_procces(binCommand,&procResources)) {
-					if (pCur->redirect_in) pCur->redirect_in = FALSE;
-					if (pCur->redirect_out) pCur->redirect_out = FALSE;
-					printf("");
+				if (CheckIfFileExist(binCommand->name)) {
+					if (Open_procces(binCommand, &procResources)) {
+						if (pCur->redirect_in) pCur->redirect_in = FALSE;
+						if (pCur->redirect_out) pCur->redirect_out = FALSE;
+					}
+					else {
+						printf("OctoSell: failed to execute command.\n");
+
+					}
 
 				}
-				else if (!Open_procces(pCur, &procResources)) {
-					printf("Creating process failed.\n");
+				else if (Open_procces(pCur, &procResources)) { //CheckIfFileExist(pCur->name)
+					//if(!Open_procces(pCur, &procResources))
+						//printf("Creating process failed.\n");
+				}
+				else {
+					printf("No execution file has been found, DON'T PLAY WITH US!!!\n");
 				}
 				free(binCommand->name);
 				free(binCommand);
 			}
 			commandIndex++;
 		}
+
+		//End the procces
 
 		EndProcesses(&procResources);
 		if (skip) continue;
@@ -639,6 +813,8 @@ int main()
 		printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 
 	}
+
+	
 
 
 	freePathNode(start_path);

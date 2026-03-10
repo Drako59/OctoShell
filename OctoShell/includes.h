@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <Windows.h>
+#include <shlwapi.h>
 //#include <winsock2.h>
 //#include <ws2tcpip.h>   
 //#include <wchar.h>
@@ -19,3 +20,5 @@
 #include "stringFuncs.h"
 
 #include "TypesDef.h"
+
+#pragma comment(lib, "shlwapi.lib")

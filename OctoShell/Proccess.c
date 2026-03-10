@@ -44,11 +44,7 @@ BOOL Open_procces(Command* command, AllocResources* resources ) {
 
 
 	int i = resources->processesNum;
-	/*HANDLE* newThreads = (HANDLE*)realloc(threads, sizeof(HANDLE) * (processesNum + 1));
-
-	if (NULL == newThreads) { return FALSE; }
-
-	threads = newThreads;*/
+	
 
 
 	wchar_t* unicode_buffer;
@@ -57,9 +53,7 @@ BOOL Open_procces(Command* command, AllocResources* resources ) {
 	//set the variable we are going to  use to open the process
 	//STARTUPINFO* si = (STARTUPINFO*)malloc(sizeof(STARTUPINFO));
 
-	/*if (NULL == si) return FALSE;
-
-	if (si == NULL) return FALSE;*/
+	
 	ZeroMemory(&(resources->si[i]), sizeof(resources->si[i]));
 	resources->si[i].cb = sizeof(resources->si[i]);
 	resources->si[i].dwFlags = STARTF_USESTDHANDLES;

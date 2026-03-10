@@ -3,8 +3,8 @@
 FIXES NEEDED: 
 	 CAT: fin the reason why cat is missing some byts while reading and fix it.
 	 CP: create the function from start so it could function the best.
-	 OctoShell: make the open multipile procceses when in parrlow while creating a pipe and make the *filetype and enviromental variables.
-	 GLOBAL: make error systems.
+	 OctoShell: make the open multipile procceses when in parrlow while creating a pipe and make the *filetype and enviromental variables. (v)
+	 GLOBAL: Add check for succesful allocation in sepIntoCommand functio!!!!!!
+			 make error systems.
 			 add records for the codes so that it will be easy to understand.
-
 

@@ -75,3 +75,12 @@ typedef struct AllocResources {
 } AllocResources;
 
 #endif
+
+#ifndef ENV_VAR_OCTOSHELL
+#define ENV_VAR_OCTOSHELL
+typedef struct EnvVar {
+	char* name;
+	char* value;
+	struct EnvVar* nextVar;
+} EnvVar;
+#endif
