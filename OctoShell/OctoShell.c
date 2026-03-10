@@ -357,7 +357,7 @@ char* strtokCommand(char* command_str, const char* sep) {
 		}
 
 		if (insideDoubleQuote || insideQuote) {
-			printf("OctoShell: There is must be a matching quote in a parsed string.");
+			printf("OctoShell: There is must be a matching quote in a parsed string.\n");
 			command = NULL;
 			return NULL;
 		}
@@ -375,9 +375,94 @@ void FreeCommandSepError() {
 
 }
 
+char* GetEnvValue(EnvVar* envVars, char* name) {
+	while (envVars) {
+		if (strcmp(envVars->name, name) == 0) {
+			return _strdup(envVars->value);
+		}
+		envVars = envVars->nextVar;
+	}
+	return _strdup("");
+}
+
+char* PlaceEnvVars(char* arg_par, EnvVar* envVars) {
+	char* sep = "$";
+	char* arg = _strdup(arg_par);
+	if (arg == NULL) return NULL;
+	char* tok = strtok(arg,sep);
+	char* placed_arg = NULL;
+	char* placed_arg_alloc = NULL;
+
+	char* end_var = NULL;
+
+	char buffer_var_name[MAX_PATH];
+	char* value = NULL;
+	int tok_len;
+	int var_len;
+	int total_len = 0;
+	BOOL first_is_var = FALSE;
+	if (arg_par[0] == '$') first_is_var = TRUE;
+	BOOL first = TRUE;
+	while (tok != NULL) {
+		var_len = 0;
+		tok_len = strlen(tok);
+		for (int i = 0; i < tok_len; i++) {
+			if (!((tok[i] <= '9' && tok[i] >= '0') || (tok[i] <= 'Z' && tok[i] >= 'A') || ( tok[i] <= 'z' && tok[i] >= 'a') || (tok[i] == '_'))) {
+				var_len = i;
+				end_var = tok + i;
+				break;
+			}
+			if (i == tok_len - 1) {
+				var_len = i  + 1;
+				end_var = tok + i + 1;
+			}
+			
+		}
+		snprintf(buffer_var_name, var_len + 1, "%s", tok);
+		value = GetEnvValue(envVars, buffer_var_name);
+		if (value == NULL) {
+			if (placed_arg != NULL) free(placed_arg);
+			return NULL;
+		}
+		if(first)
+			total_len += first_is_var? tok_len - var_len + strlen(value) : tok_len;
+		else
+			total_len += tok_len - var_len + strlen(value);
+
+		placed_arg_alloc = (char*)realloc(placed_arg, sizeof(char) * (total_len + 1));
+		if (placed_arg_alloc == NULL) {
+			if (placed_arg != NULL) free(placed_arg);
+			free(value);
+			return NULL;
+		}
+		placed_arg = placed_arg_alloc;
+		if (first) {
+			if (first_is_var) {
+				strcpy(placed_arg, value);
+				strcat(placed_arg, end_var);
+			}
+			else {
+				strcpy(placed_arg, tok);
+			}
+			first = FALSE;
+		}
+		else
+		{
+			strcat(placed_arg, value);
+			strcat(placed_arg, end_var);
+
+		}
+		free(value);
+		tok = strtok(NULL,sep);
+	}
+	free(arg);
+	return placed_arg;
+}
 
 
-Command* SepIntoCommand(char* command_str, Command* command) { //to choose if return a command obj or to pass one
+Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { //to choose if return a command obj or to pass one
+	
+	
 	char* ptr = NULL;
 	char* cmd;
 	//int argc = 0;
@@ -393,13 +478,23 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 	char* tok;
 	Command* startCommand = command;
 	command->argc = 0;
+	char* new_command_string_buffer = PlaceEnvVars(command_str, envVars);
+	snprintf(command_str, COMMAND_MAX_SIZE,"%s", new_command_string_buffer);
+	free(new_command_string_buffer);
+
+	if (command_str == NULL) {
+		printf("OctoShell: Failed to load enviroment variables.\n");
+		return NULL;
+	}
 	//seperate into tokens and 
 
 
 	//add a redirect in
 	tok = strtokCommand(command_str, sep);
 	
-	if (!tok) return NULL;
+	if (!tok) {
+		return NULL;
+	} 
 	
 	cmd = tok;
 
@@ -512,7 +607,6 @@ Command* SepIntoCommand(char* command_str, Command* command) { //to choose if re
 	}
 
 	command->next = NULL;
-
 
 }
 
@@ -629,6 +723,7 @@ char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR" };
 DirectoryNode* start_path;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
+EnvVar envVars = { 0 };
 char command_str[COMMAND_MAX_SIZE];
 char* function_bin;  
 //char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Debug\\bin\\";
@@ -666,10 +761,14 @@ int main()
 	
 
 	function_bin = GetShellFilePath(1);
-	EnvVar envVars = { 0 };
+	
 	envVars.name = "OctoShell";
 	envVars.value = GetShellFilePath(0);
 	LoadWindowsEnvVars(&envVars);
+	/*printEnvVars(&envVars);
+
+	char* test = "test/test/   $OctoShell";
+	char* test2 = PlaceEnvVars(test, &envVars);*/
 	AllocResources procResources;
 	procResources.si = NULL;
 	procResources.pi = NULL;
@@ -733,7 +832,7 @@ int main()
 		if (strcmp(command_str, "Exit()") == 0 || strcmp(command_str, "exit") == 0 || strcmp(command_str, "EXIT") == 0 || strcmp(command_str, "exit") == 0)
 			break;
 
-		if (SepIntoCommand(command_str, &command) == NULL) {
+		if (SepIntoCommand(command_str, &command, &envVars) == NULL) {
 			printf("Invalid Command\n");
 			printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 			ExitFree(&command);
