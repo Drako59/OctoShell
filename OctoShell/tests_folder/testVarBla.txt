@@ -1,0 +1,10 @@
+hello
+hello
+hello
+e.com-->142.250.75.36------
+REPLAY ADDR: www.google.com-->142.250.75.36 RTT: 9ms TTL: 64
+REPLAY ADDR: www.google.com-->142.250.75.36 RTT: 9ms TTL: 64
+REPLAY ADDR: www.google.com-->142.250.75.36 RTT: 9ms TTL: 64
+REPLAY ADDR: www.google.com-->142.250.75.36 RTT: 8ms TTL: 64
+avg ping RTT: 8.75ms
+

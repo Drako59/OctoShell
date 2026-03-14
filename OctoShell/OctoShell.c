@@ -80,6 +80,9 @@ void printEnvVars(EnvVar* vars) {
 	}
 }
 
+void printLastEnvVar(Command* command);
+
+
 //
 //Alocation error
 void printAllocationError(void) {
@@ -88,8 +91,11 @@ void printAllocationError(void) {
 }
 
 void FreeCommand(Command* cmd_pointer) {
+	Command* current;
+	BOOL first = TRUE;
 	while (cmd_pointer != NULL) {
-		free(cmd_pointer->name);
+		if(cmd_pointer->name)
+			free(cmd_pointer->name);
 		if (cmd_pointer->redirect_in)
 			CloseHandle(cmd_pointer->stdin_file);
 		if (cmd_pointer->redirect_out)
@@ -97,8 +103,24 @@ void FreeCommand(Command* cmd_pointer) {
 		for (int i = 0; i < cmd_pointer->argc; i++) {
 			free(cmd_pointer->argv[i]);
 		}
+		current = cmd_pointer;
 		cmd_pointer = cmd_pointer->next;
+		if (!first)
+			free(current);
+		else first = FALSE;
 	}
+}
+
+void FreeEnvVars(EnvVar* envVars) {
+	EnvVar* current;
+	while (envVars != NULL) {
+		free(envVars->name);
+		free(envVars->value);
+		current = envVars;
+		envVars = envVars->nextVar;
+		free(current);
+	}
+
 }
 
 char* utf16_to_utf8(const wchar_t* w)
@@ -460,6 +482,28 @@ char* PlaceEnvVars(char* arg_par, EnvVar* envVars) {
 }
 
 
+BOOL IsAssignment(char* token) {
+	if (strchr(token, '=')) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CheckVarName(char* name) {
+	if (name[0] >= '0' && name[0] <= '9') {
+		return FALSE;
+	}
+	int length = strchr(name, '=') - name;
+	for (int i = 0; i < length; i++) {
+		if (!((name[i] <= '9' && name[i] >= '0') || (name[i] <= 'Z' && name[i] >= 'A') || (name[i] <= 'z' && name[i] >= 'a') || (name[i] == '_'))) {
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+
+
 Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { //to choose if return a command obj or to pass one
 	
 	
@@ -492,9 +536,44 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 	//add a redirect in
 	tok = strtokCommand(command_str, sep);
 	
-	if (!tok) {
-		return NULL;
-	} 
+	BOOL first = TRUE;
+	while (tok != NULL && IsAssignment(tok)) {
+		if (CheckVarName(tok)) {
+			char* equal = strchr(tok, '=');
+			if (!equal) return FALSE;
+			int name_length = equal - tok;
+			char* name = (char*)malloc(sizeof(char) * (name_length + 1));
+			if (name == NULL) return FALSE;
+			snprintf(name , name_length + 1,"%s", tok);
+			char* value = (char*)malloc(strlen(equal)); //value length - 1 by check with the '=' sign.
+			if (value == NULL) {
+				free(name);
+				return FALSE;
+			}
+			strcpy(value, equal + 1);
+			if (!UpdateEnvVar(name, value, envVars)) {
+				if (!AddEnvVar(name, value, envVars)) {
+					free(name);
+					free(value);
+					return FALSE;
+				}
+			}
+			first = FALSE;
+			
+		}
+		else {
+			printf("Varibale Name isn't valid, valid chars: 0-9 (must not be first), A-Z, a-z, _ .");
+			return FALSE;
+		}
+		tok = strtokCommand(NULL, sep);
+
+	}
+
+
+	if (tok == NULL && !first) {
+		return TRUE;
+	}
+	else if (!tok) return FALSE;
 	
 	cmd = tok;
 
@@ -612,6 +691,7 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 
 void ExitFree(Command* command) {
 	FreeCommand(command);
+	ZeroMemory(command, sizeof(Command));
 
 }
 
@@ -712,24 +792,74 @@ BOOL LoadWindowsEnvVars(EnvVar* varList) {
 	return TRUE;
 }
 
+//Add a new var but don't create a copy a the text but put the pointers as the value so be carefull when use.
+BOOL AddEnvVar(char* name, char* value, EnvVar* envVars) {
+	static EnvVar* last_var = NULL;
+	if (last_var == NULL)
+	{
+		last_var = envVars;
+		while (last_var->nextVar != NULL)
+			last_var = last_var->nextVar;
+
+		
+
+		
+	}
+
+	last_var->nextVar = (EnvVar*)calloc(1, sizeof(EnvVar));
+	if (last_var->nextVar == NULL) return FALSE;
+
+	last_var = last_var->nextVar;
+	last_var->name = name;
+	last_var->value = value;
+	return TRUE;
+	
+}
+
+BOOL UpdateEnvVar(char* name, char* value, EnvVar* envVars) {
+	EnvVar* current_var = envVars;
+	
+
+	while (current_var != NULL) {
+		if (strcmp(current_var->name, name) == 0)
+		{
+			free(current_var->value);
+			current_var->value = value;
+			return TRUE;
+		}
+		current_var = current_var->nextVar;
+	}
+	return FALSE;
+
+}
+
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
 
 
 
-BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear };
-char* funcs_name[] = { "cd","pwd", "echo","clear" };
-char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR" };
+BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear ,printLastEnvVar };
+char* funcs_name[] = { "cd","pwd", "echo","clear", "last"};
+char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR", "LAST"};
 DirectoryNode* start_path;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
-EnvVar envVars = { 0 };
+EnvVar* envVars;
 char command_str[COMMAND_MAX_SIZE];
 char* function_bin;  
 //char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Debug\\bin\\";
 char* path;
 //--------------------------------------------------------------------------------------------------------------------------------------
 //function that uses the global varibals
+
+void printLastEnvVar(Command* command) {
+	EnvVar* pVar = envVars;
+	while (pVar->nextVar != NULL)
+		pVar = pVar->nextVar;
+
+	printf("%s=%s\n", pVar->name, pVar->value);
+
+}
 
 Command* BinCommand_init(Command* command) {
 	Command* copy_command = CopyCommand(command);
@@ -761,11 +891,29 @@ int main()
 	
 
 	function_bin = GetShellFilePath(1);
-	
-	envVars.name = "OctoShell";
-	envVars.value = GetShellFilePath(0);
-	LoadWindowsEnvVars(&envVars);
-	/*printEnvVars(&envVars);
+	envVars = (EnvVar*)calloc(1, sizeof(EnvVar));
+	if (envVars == NULL) {
+		printAllocationError();
+		return 1;
+	}
+
+	char* OctoShellVarName = _strdup("OctoShell");
+	if (OctoShellVarName == NULL) {
+		free(envVars);
+		printAllocationError();
+		return 1;
+	}
+	envVars->name = OctoShellVarName;
+	char* OctoShellVarValue = GetShellFilePath(0);
+	if (OctoShellVarValue == NULL) {
+		free(envVars->name);
+		free(envVars);
+		printAllocationError();
+		return 1;
+	}
+	envVars->value = OctoShellVarValue;
+	LoadWindowsEnvVars(envVars);
+	/*printEnvVars(envVars);
 
 	char* test = "test/test/   $OctoShell";
 	char* test2 = PlaceEnvVars(test, &envVars);*/
@@ -795,7 +943,7 @@ int main()
 	}
 	BOOL func_match_flag[COMMAND_MAX_SIZE];
 
-	Command command;
+	Command command = {0};
 	Command* cmd_pointer;
 	cmd_pointer = &command;
 	int len;
@@ -806,8 +954,6 @@ int main()
 	path_pointer = start_path;
 
 
-	//const wchar_t* path_const = path;
-	//const wchar_t* path_const = L"C:\\Users\\User\\source\\repos\\Drako59\\OctoShell\\OctoShell";
 	const wchar_t* path_constW = L"C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\OctoShell\\tests_folder";
 	const char* path_const = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\OctoShell\\tests_folder";
 
@@ -821,7 +967,7 @@ int main()
 	while (fgets(command_str, COMMAND_MAX_SIZE, stdin)) {
 		int commandIndex = 0;
 
-		//Set the redirections
+		//Parsing the command into the Command structure.
 		Command_init(&command, hStdInputFile, hStdOutFile);
 
 		len = strlen(command_str);
@@ -832,74 +978,75 @@ int main()
 		if (strcmp(command_str, "Exit()") == 0 || strcmp(command_str, "exit") == 0 || strcmp(command_str, "EXIT") == 0 || strcmp(command_str, "exit") == 0)
 			break;
 
-		if (SepIntoCommand(command_str, &command, &envVars) == NULL) {
+		if (SepIntoCommand(command_str, &command, envVars) == NULL) {
 			printf("Invalid Command\n");
 			printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 			ExitFree(&command);
 			continue;
 		}
 
-		//call the function according to the command
-		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
-			func_match_flag[commandIndex] = FALSE;
-			size_t command_length = strlen(pCur->name);
-			for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-				if (strncmp(funcs_name[i], pCur->name, command_length - 4) == 0 || strncmp(funcs_name_cap[i], pCur->name, command_length - 4) == 0) {
-					//command.argv = &(command.argv[1]);
+		if (command.name != NULL) {
+			//call the function according to the command
+			for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
+				func_match_flag[commandIndex] = FALSE;
+				size_t command_length = strlen(pCur->name);
+				for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
+					if (strncmp(funcs_name[i], pCur->name, command_length - 4) == 0 || strncmp(funcs_name_cap[i], pCur->name, command_length - 4) == 0) {
+						//command.argv = &(command.argv[1]);
 
-					if (func_arr[i](pCur) == FALSE)
-					{
-						printf("There was a problem in function process.\n");
-					};
-					func_match_flag[commandIndex] = TRUE;
-					pCur->built_in = TRUE;
-					break;
+						if (func_arr[i](pCur) == FALSE)
+						{
+							printf("There was a problem in function process.\n");
+						};
+						func_match_flag[commandIndex] = TRUE;
+						pCur->built_in = TRUE;
+						break;
+					}
 				}
+				commandIndex++;
 			}
-			commandIndex++;
-		}
-		commandIndex = 0;
-		BOOL skip = FALSE;
-		for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
-			if (!func_match_flag[commandIndex] && !pCur->built_in) {
-				Command* binCommand = BinCommand_init(pCur);
+			commandIndex = 0;
+			BOOL skip = FALSE;
+			for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
+				if (!func_match_flag[commandIndex] && !pCur->built_in) {
+					Command* binCommand = BinCommand_init(pCur);
 
-				if (binCommand == NULL)
-				{
+					if (binCommand == NULL)
+					{
 
-					ExitFree(pCur);
-					skip = TRUE;
-					break;
-				}
-				if (CheckIfFileExist(binCommand->name)) {
-					if (Open_procces(binCommand, &procResources)) {
-						if (pCur->redirect_in) pCur->redirect_in = FALSE;
-						if (pCur->redirect_out) pCur->redirect_out = FALSE;
+						ExitFree(pCur);
+						skip = TRUE;
+						break;
+					}
+					if (CheckIfFileExist(binCommand->name)) {
+						if (Open_procces(binCommand, &procResources)) {
+							if (pCur->redirect_in) pCur->redirect_in = FALSE;
+							if (pCur->redirect_out) pCur->redirect_out = FALSE;
+						}
+						else {
+							printf("OctoSell: failed to execute command.\n");
+
+						}
+
+					}
+					else if (Open_procces(pCur, &procResources)) { //CheckIfFileExist(pCur->name)
+						//if(!Open_procces(pCur, &procResources))
+							//printf("Creating process failed.\n");
 					}
 					else {
-						printf("OctoSell: failed to execute command.\n");
-
+						printf("No execution file has been found, DON'T PLAY WITH US!!!\n");
 					}
-
+					free(binCommand->name);
+					free(binCommand);
 				}
-				else if (Open_procces(pCur, &procResources)) { //CheckIfFileExist(pCur->name)
-					//if(!Open_procces(pCur, &procResources))
-						//printf("Creating process failed.\n");
-				}
-				else {
-					printf("No execution file has been found, DON'T PLAY WITH US!!!\n");
-				}
-				free(binCommand->name);
-				free(binCommand);
+				commandIndex++;
 			}
-			commandIndex++;
+
+			//End the procces
+
+			EndProcesses(&procResources);
+			if (skip) continue;
 		}
-
-		//End the procces
-
-		EndProcesses(&procResources);
-		if (skip) continue;
-
 
 
 
@@ -915,7 +1062,7 @@ int main()
 
 	
 
-
+	FreeEnvVars(envVars);
 	freePathNode(start_path);
 	EndThemeColors();
 	printf("success");
