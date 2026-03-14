@@ -7,4 +7,5 @@ FIXES NEEDED:
 	 GLOBAL: Add check for succesful allocation in sepIntoCommand functio!!!!!!
 			 make error systems.
 			 add records for the codes so that it will be easy to understand.
+			 Need to add ALIAS oprion and fix the quotes ("") system so when there are quotes it wouldn't be part of it.
 

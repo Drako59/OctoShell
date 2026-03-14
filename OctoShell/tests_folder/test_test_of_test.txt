@@ -1,0 +1,5 @@
+-----ping www.goole.com-->217.160.0.201------
+REPLAY ADDR: www.goole.com-->217.160.0.201 RTT: 60ms TTL: 64
+REPLAY ADDR: www.goole.com-->217.160.0.201 RTT: 61ms TTL: 64
+REPLAY ADDR: www.goole.com-->217.160.0.201 RTT: 60ms TTL: 64
+REPLAY ADDR: www.goole.com-->217.160.0.201 RTT: 60ms TTL: 64

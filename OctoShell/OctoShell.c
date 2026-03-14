@@ -407,7 +407,7 @@ char* GetEnvValue(EnvVar* envVars, char* name) {
 	return _strdup("");
 }
 
-char* PlaceEnvVars(char* arg_par, EnvVar* envVars) {
+char* PlaceEnvVars(char* arg_par, EnvVar* envVars) { 
 	char* sep = "$";
 	char* arg = _strdup(arg_par);
 	if (arg == NULL) return NULL;
@@ -441,7 +441,12 @@ char* PlaceEnvVars(char* arg_par, EnvVar* envVars) {
 			
 		}
 		snprintf(buffer_var_name, var_len + 1, "%s", tok);
-		value = GetEnvValue(envVars, buffer_var_name);
+		if(first)
+			value = first_is_var ? GetEnvValue(envVars, buffer_var_name) : _strdup("");
+		else
+			value = GetEnvValue(envVars, buffer_var_name);
+
+
 		if (value == NULL) {
 			if (placed_arg != NULL) free(placed_arg);
 			return NULL;
@@ -478,7 +483,7 @@ char* PlaceEnvVars(char* arg_par, EnvVar* envVars) {
 		tok = strtok(NULL,sep);
 	}
 	free(arg);
-	return placed_arg;
+	return placed_arg;  //retun an allocation to heap so rememver to free.
 }
 
 
@@ -502,6 +507,36 @@ BOOL CheckVarName(char* name) {
 	return TRUE;
 }
 
+//take the original text and remove the quotes
+BOOL RemoveQuotes(char* text) {
+	int len = strlen(text);
+	int p = 0;
+	BOOL InsideQuotes = FALSE;
+	BOOL InsideDoubleQuotes = FALSE;
+	BOOL removed = FALSE;
+	for (int i = 0; i  < len + 1; i++) {
+		if(text[i] == '"' && !InsideDoubleQuotes && !InsideQuotes) {
+			InsideDoubleQuotes = TRUE;
+			removed = TRUE;
+		}
+		else if (text[i] == '\'' && !InsideDoubleQuotes && !InsideQuotes) {
+			InsideQuotes = TRUE;
+			removed = TRUE;
+		}
+		else if (text[i] == '"' && InsideDoubleQuotes) {
+			InsideDoubleQuotes = TRUE;
+		}
+		else if (text[i] == '\'' && InsideQuotes) {
+			InsideQuotes = TRUE;
+		}
+		else {
+			text[p] = text[i];
+			p++;
+		}
+	}
+	return removed;
+	//text[p] = '\0';
+}
 
 
 Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { //to choose if return a command obj or to pass one
@@ -535,9 +570,11 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 
 	//add a redirect in
 	tok = strtokCommand(command_str, sep);
-	
+
 	BOOL first = TRUE;
 	while (tok != NULL && IsAssignment(tok)) {
+		RemoveQuotes(tok);
+
 		if (CheckVarName(tok)) {
 			char* equal = strchr(tok, '=');
 			if (!equal) return FALSE;
@@ -567,6 +604,7 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 		}
 		tok = strtokCommand(NULL, sep);
 
+
 	}
 
 
@@ -590,18 +628,25 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 
 	//strcpy(command->name, cmd);
 	tok = strtokCommand(NULL, sep);
+
 	//create a command obj
 
 
 	//parsing into the command.
 	while (tok != NULL && command->argc < COMMAND_MAX_SIZE) {
-		
+
 		if (strncmp(tok, ">", COMMAND_MAX_SIZE) == 0) {
 			tok = strtokCommand(NULL, sep);
+
 			if (tok == NULL)
 				break;
+
+			RemoveQuotes(tok);
+
+
 			if (SetRedirectOUT(tok, command) == NULL) return NULL;
 			tok = strtokCommand(NULL, sep);
+
 			continue;
 		}
 		
@@ -634,7 +679,11 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 
 		if (strcmp(tok, "|") == 0) {
 			tok = strtokCommand(NULL, sep);
+
 			if (tok == NULL) continue;
+			RemoveQuotes(tok);
+
+
 			HANDLE hWrite, hRead;
 			SECURITY_ATTRIBUTES sa = { 0 };
 			sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -673,6 +722,7 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 			command->stdin_file = hRead;
 			command->redirect_in = TRUE;
 			tok = strtokCommand(NULL, sep);
+
 			continue;
 		}
 		command->argv[command->argc] = (char*)malloc(sizeof(char) * (strlen(tok) + 2));
@@ -682,6 +732,7 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 		strcpy(command->argv[command->argc], tok);
 		command->argc++;
 		tok = strtokCommand(NULL, sep);
+
 
 	}
 
@@ -835,9 +886,6 @@ BOOL UpdateEnvVar(char* name, char* value, EnvVar* envVars) {
 
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
-
-
-
 BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear ,printLastEnvVar };
 char* funcs_name[] = { "cd","pwd", "echo","clear", "last"};
 char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR", "LAST"};
@@ -849,7 +897,10 @@ char command_str[COMMAND_MAX_SIZE];
 char* function_bin;  
 //char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Debug\\bin\\";
 char* path;
+
 //--------------------------------------------------------------------------------------------------------------------------------------
+
+
 //function that uses the global varibals
 
 void printLastEnvVar(Command* command) {
@@ -861,6 +912,8 @@ void printLastEnvVar(Command* command) {
 
 }
 
+
+//RETURN THE COMMAND WITH DIRETION TO THE FUNCTION IN HE BIN OF THE SHELL
 Command* BinCommand_init(Command* command) {
 	Command* copy_command = CopyCommand(command);
 
@@ -889,8 +942,11 @@ Command* BinCommand_init(Command* command) {
 int main()
 {
 	
-
+	//GET THE PATH TO THE DIRECTORY OF THE FUNCTIONS
 	function_bin = GetShellFilePath(1);
+
+
+	//LOAD THE WINDOWS ENVIROEMTN AND SET THE VARS LIST
 	envVars = (EnvVar*)calloc(1, sizeof(EnvVar));
 	if (envVars == NULL) {
 		printAllocationError();
@@ -903,6 +959,7 @@ int main()
 		printAllocationError();
 		return 1;
 	}
+
 	envVars->name = OctoShellVarName;
 	char* OctoShellVarValue = GetShellFilePath(0);
 	if (OctoShellVarValue == NULL) {
@@ -917,14 +974,23 @@ int main()
 
 	char* test = "test/test/   $OctoShell";
 	char* test2 = PlaceEnvVars(test, &envVars);*/
+
+
+
+
+	//INITILIZE THE RESSOURCE ALLOCATOR THAT WILL BE USE TO MONITOR ALL THE PROCESSES THAT THE SHELL LOADED
 	AllocResources procResources;
 	procResources.si = NULL;
 	procResources.pi = NULL;
 	procResources.processes = NULL;
 	procResources.processesNum = 0;
+	
+	//SET THE COLOR FOR THE UI DESIGN
 	enable_ansi_colors();
 	
 	//SetThemeColors();
+
+	//PRINT THE STARTING MESSAGE OF THE SHELL
 	printOctopus();
 	wprintf(L"Welcome to OctoShell 🐙\n");
 	UINT original_cp = GetConsoleOutputCP(); // Save original code page
@@ -932,6 +998,7 @@ int main()
 	printf("%u \n", original_cp);
 	SetConsoleOutputCP(CP_UTF8);
 
+	//GET THE STDIN AND STRDOUT HANDLES
 	HANDLE hStdOutFile = GetStdHandle(STD_OUTPUT_HANDLE);
 	HANDLE hStdInputFile = GetStdHandle(STD_INPUT_HANDLE);
 	if (hStdOutFile == INVALID_HANDLE_VALUE || hStdOutFile == NULL ||
@@ -941,6 +1008,8 @@ int main()
 		printf("couldn't load stdin and stdout handles\n.");
 		return 1;
 	}
+
+	//INTILIZE VARIBALES
 	BOOL func_match_flag[COMMAND_MAX_SIZE];
 
 	Command command = {0};
@@ -963,6 +1032,8 @@ int main()
 	change_dir_Node(path_const); //NEED TO BE OUT OF COMMNET WHEN FINISHED.
 	path = CreatePath(start_path);
 	//************************************
+
+	//THE MAIN LOOP THAT RUNS THE COMMANDS
 	printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 	while (fgets(command_str, COMMAND_MAX_SIZE, stdin)) {
 		int commandIndex = 0;
@@ -978,6 +1049,7 @@ int main()
 		if (strcmp(command_str, "Exit()") == 0 || strcmp(command_str, "exit") == 0 || strcmp(command_str, "EXIT") == 0 || strcmp(command_str, "exit") == 0)
 			break;
 
+		//LOAD THE COMMAND STURCTURE BY THE COMMAND LINE THAT WAS PASED USING fgets()
 		if (SepIntoCommand(command_str, &command, envVars) == NULL) {
 			printf("Invalid Command\n");
 			printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
@@ -985,6 +1057,7 @@ int main()
 			continue;
 		}
 
+		//CHCK IF TERE A COMMAND TO RUN
 		if (command.name != NULL) {
 			//call the function according to the command
 			for (Command* pCur = &command; pCur != NULL; pCur = pCur->next) {
@@ -1042,7 +1115,7 @@ int main()
 				commandIndex++;
 			}
 
-			//End the procces
+			//End the proccess that was lunched.
 
 			EndProcesses(&procResources);
 			if (skip) continue;
