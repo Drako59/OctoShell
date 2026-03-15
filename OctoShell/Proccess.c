@@ -111,11 +111,15 @@ BOOL Open_procces(Command* command, AllocResources* resources ) {
 	}
 	
 	//Create the procces
+	HANDLE hStdErrFile = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetHandleInformation(hStdErrFile, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+
 	SetHandleInformation(command->stdin_file, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
 	SetHandleInformation(command->stdout_file, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+	resources->si[i].hStdError = hStdErrFile;
 	resources->si[i].hStdInput = command->stdin_file;
 	resources->si[i].hStdOutput = command->stdout_file;
-
+	
 	BOOL flag = CreateProcessW(NULL, para,  NULL, NULL, TRUE, 0, NULL, NULL, &(resources->si[i]), &(resources->pi[i]));
 	if (!flag) {
 		free(para);
@@ -144,6 +148,8 @@ BOOL Open_procces(Command* command, AllocResources* resources ) {
 		command->redirect_out = FALSE;
 		CloseHandle(command->stdout_file);
 	}
+	//need to implement StdError*********** 
+
 
 	//free the memory we use and close the handle to prevent memory leaks
 	/*CloseHandle(pi->hThread);
