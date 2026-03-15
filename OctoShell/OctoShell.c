@@ -70,6 +70,8 @@ void printOctopus() {
 		"                      ``______,,            --OctoShell            ,,______''\n"
 		ESC "[0m"      /* reset */
 	);
+	
+	
 }
 
 //DEBUG FUNCTIONS
@@ -992,11 +994,11 @@ int main()
 
 	//PRINT THE STARTING MESSAGE OF THE SHELL
 	printOctopus();
-	wprintf(L"Welcome to OctoShell 🐙\n");
-	UINT original_cp = GetConsoleOutputCP(); // Save original code page
 
-	printf("%u \n", original_cp);
+	wprintf(L"Welcome to OctoShell 🐙くコ:彡\n");
+	UINT original_cp = GetConsoleOutputCP(); // Save original code page
 	SetConsoleOutputCP(CP_UTF8);
+	printf("%u \n", original_cp);
 
 	//GET THE STDIN AND STRDOUT HANDLES
 	HANDLE hStdOutFile = GetStdHandle(STD_OUTPUT_HANDLE);
