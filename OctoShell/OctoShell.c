@@ -617,16 +617,16 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 	
 	cmd = tok;
 
-	int name_length = (strlen(tok) + 5);
+	int name_length = (strlen(tok) + 1); // +5 for adding .exe
 	command->name = (char*)malloc(sizeof(char) * name_length);
 
 	//check malloc!!!!
 
 	//
-	if (!IsExe(cmd))
+	/*if (!IsExe(cmd))
 		snprintf(command->name, name_length, "%s.exe", cmd);
-	else
-		snprintf(command->name, name_length, "%s", cmd);
+	else*/
+	snprintf(command->name, name_length, "%s", cmd);
 
 	//strcpy(command->name, cmd);
 	tok = strtokCommand(NULL, sep);
@@ -709,15 +709,15 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 			Command_init(command, hStdInputFile, hStdOutFile);
 
 			//set the command name:
-			name_length = (strlen(tok) + 5);
+			name_length = (strlen(tok) + 1); // + 5 for adding .exe
 			command->name = (char*)malloc(sizeof(char) * name_length);// the size + null + .exe
 			//check for succes fo malloc!!!!
 
 			//
-			if(!IsExe(tok))
+			/*if(!IsExe(tok))
 				snprintf(command->name, name_length,"%s.exe", tok);
-			else
-				snprintf(command->name, name_length, "%s", tok);
+			else*/
+			snprintf(command->name, name_length, "%s", tok);
 
 			command->redirect_out = FALSE;
 			command->argc = 0;
@@ -765,17 +765,43 @@ BOOL AddString(char** src, char* dst) {
 }
 
 BOOL CheckIfFileExist(const char* path) {
-	if (PathFileExistsA(path)) {
-		return TRUE;
-	}
 
-	return FALSE;
+	if (!HasExtension(path)) {
+		char* formats[] = { ".exe", ".cmd", ".com" , ".bat" , ".ps1" };
+		int pathLength = strlen(path) + 5;
+		char* path_format = (char*)malloc(sizeof(char) * pathLength);
+		if (path == NULL) {
+			printAllocationError();
+			return FALSE;
+		}
+
+		for (int i = 0; i < sizeof(formats) / sizeof(formats[0]); i++) {
+			snprintf(path_format, pathLength, "%s%s", path, formats[i]);
+			if (PathFileExistsA(path_format)) {
+				free(path_format);
+				return TRUE;
+			}
+		}
+
+		free(path_format);
+
+		return FALSE;
+	}
+	else {
+		return PathFileExistsA(path);
+	}
 }
-BOOL IsExe(const char* path) {
+BOOL HasExtension(const char* path) {
 	int path_length = strlen(path);
 	if (path < 5) return FALSE;
 	const char* path_pointer = path + path_length - 4;
-	return strncmp(path_pointer, ".exe" , 4) == 0 || strncmp(path_pointer, ".EXE" , 4) == 0;
+	char* formats[] = { ".exe", ".cmd", ".com" , ".bat" , ".ps1" };
+	for (int i = 0; i < sizeof(formats) / sizeof(formats[0]); i++) {
+		if (strncmp(path_pointer, formats[i], 4) == 0) {
+			return TRUE;
+		}
+	}
+	return FALSE;
 
 }
 
@@ -1066,7 +1092,7 @@ int main()
 				func_match_flag[commandIndex] = FALSE;
 				size_t command_length = strlen(pCur->name);
 				for (int i = 0; i < sizeof(funcs_name) / sizeof(funcs_name[0]); i++) {
-					if (strncmp(funcs_name[i], pCur->name, command_length - 4) == 0 || strncmp(funcs_name_cap[i], pCur->name, command_length - 4) == 0) {
+					if (strcmp(funcs_name[i], pCur->name) == 0 || strcmp(funcs_name_cap[i], pCur->name) == 0) {
 						//command.argv = &(command.argv[1]);
 
 						if (func_arr[i](pCur) == FALSE)
@@ -1104,13 +1130,40 @@ int main()
 						}
 
 					}
-					else if (Open_procces(pCur, &procResources)) { //CheckIfFileExist(pCur->name)
+					else if (!Open_procces(pCur, &procResources)) { //CheckIfFileExist(pCur->name)
+
+						char* formats[] = { ".cmd", ".com" , ".bat" , ".ps1" };
+						BOOL found = FALSE;
+
+						if (!HasExtension(pCur->name)) {
+
+							char* originalName = pCur->name;
+							int command_file_length = strlen(pCur->name) + 5; //+5 for inluding extension.
+							char* path_with_format = (char*)malloc(command_file_length);
+							pCur->name = path_with_format; //Change the name temporery
+							for (int i = 0; i < sizeof(formats) / sizeof(formats[0]); i++) {
+								snprintf(path_with_format, command_file_length,"%s%s", originalName, formats[i]);
+								if (Open_procces(pCur, &procResources)) {
+									found = TRUE;
+									break;
+								}
+
+							}
+							pCur->name = originalName;
+							free(path_with_format);
+						}
+						if(!found)
+							printf("No execution file has been found, DON'T PLAY WITH US!!!\n");
+
+
+						
 						//if(!Open_procces(pCur, &procResources))
 							//printf("Creating process failed.\n");
+						
 					}
-					else {
+					/*else {
 						printf("No execution file has been found, DON'T PLAY WITH US!!!\n");
-					}
+					}*/
 					free(binCommand->name);
 					free(binCommand);
 				}

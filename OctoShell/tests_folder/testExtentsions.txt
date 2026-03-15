@@ -1,0 +1,4 @@
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 8ms TTL: 64
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 9ms TTL: 64
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 8ms TTL: 64
+REPLAY ADDR: www.google.com-->142.251.157.119 RTT: 9ms TTL: 64
