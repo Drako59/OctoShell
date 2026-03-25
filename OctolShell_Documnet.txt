@@ -8,4 +8,10 @@ FIXES NEEDED:
 			 make error systems.
 			 add records for the codes so that it will be easy to understand.
 			 Need to add ALIAS oprion and fix the quotes ("") system so when there are quotes it wouldn't be part of it.
+			 Add a config file for variables between sessions, SET function DEL function and more, and set the a variable in the start of a command will reffer only to the command.
+			 Make the parser better by creating a token structure and reffrence each token type by enaum. and support mroe variations of set variables like bash does.
+			 Add signals and more jobs like auto compelete when pressing tab or view history and more.
+			 Add a script language:) that will make your shell a ture masterpiece.
+			 Add an option to run scripts of your shell like interperter.
 
+			 

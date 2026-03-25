@@ -997,7 +997,7 @@ int main()
 		return 1;
 	}
 	envVars->value = OctoShellVarValue;
-	LoadWindowsEnvVars(envVars);
+	LoadWindowsEnvVars(envVars); 
 	/*printEnvVars(envVars);
 
 	char* test = "test/test/   $OctoShell";
