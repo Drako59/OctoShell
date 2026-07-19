@@ -84,3 +84,12 @@ typedef struct EnvVar {
 	struct EnvVar* nextVar;
 } EnvVar;
 #endif
+
+#ifndef ALIAS_OCTOSHELL
+#define ALIAS_OCTOSHELL
+typedef struct AliasVar {
+	char* name;
+	char* value;
+	struct AliasVar* nextVar;
+} AliasVar;
+#endif

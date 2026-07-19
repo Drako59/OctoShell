@@ -329,71 +329,7 @@ enum QState {
 
 
 
-//Sperate function by " " which inspierd from strtok. but build for shell's commands
-char* strtokCommand(char* command_str, const char* sep) {
-	
-	BOOL insideQuote = FALSE;
-	BOOL insideDoubleQuote = FALSE;
-	static char* command = NULL;
-	if (command_str != NULL)
-		command = command_str;
-	while (command != NULL && *command && strchr(sep, *command))
-	{
-		command++;
-	}
-	char* copyCommand = NULL;
-	if (command != NULL) {
-		int debug = strlen(command);
-		for (int i = 0; i < debug; i++) {
-			if (!insideQuote && command[i] == '"' && !insideDoubleQuote)
-				insideDoubleQuote = TRUE;
-			else if (!insideQuote && command[i] == '"' && insideDoubleQuote) {
-				insideDoubleQuote = FALSE;
 
-			}
-			if (!insideDoubleQuote && command[i] == '\'' && !insideQuote)
-				insideQuote = TRUE;
-			else if (!insideDoubleQuote && command[i] == '\'' && insideQuote) {
-				insideQuote = FALSE;
-
-			}
-			if (strchr(sep, command[i]) && !insideDoubleQuote && !insideQuote) {
-				command[i] = '\0';
-				copyCommand = command;
-				
-				
-				//if (*copyCommand != '\0') {
-					//i = 0;
-				command = &(command[i + 1]);
-
-					/*while (*command != '\0' && strchr(sep, *command)) {
-						char* check = strchr(sep, *command);
-						command[0] = '\0';
-						command = &(command[1]);
-
-					}*/
-
-					//if (*command == '\0') command = NULL;
-				return copyCommand;
-				//}
-			}
-			
-		}
-
-		if (insideDoubleQuote || insideQuote) {
-			printf("OctoShell: There is must be a matching quote in a parsed string.\n");
-			command = NULL;
-			return NULL;
-		}
-
-		copyCommand = command;
-		command = NULL;
-		return copyCommand;
-	}
-	return NULL;
-
-
-}
 
 void FreeCommandSepError() {
 
@@ -543,7 +479,8 @@ BOOL RemoveQuotes(char* text) {
 
 Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { //to choose if return a command obj or to pass one
 	
-	
+	char command_str_copy[COMMAND_MAX_SIZE];
+	snprintf(command_str_copy, COMMAND_MAX_SIZE, "%s", command_str);
 	char* ptr = NULL;
 	char* cmd;
 	//int argc = 0;
@@ -559,14 +496,20 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 	char* tok;
 	Command* startCommand = command;
 	command->argc = 0;
-	char* new_command_string_buffer = PlaceEnvVars(command_str, envVars);
+
+
+	/*char* new_command_string_buffer = PlaceEnvVars(command_str, envVars);
 	snprintf(command_str, COMMAND_MAX_SIZE,"%s", new_command_string_buffer);
 	free(new_command_string_buffer);
 
 	if (command_str == NULL) {
 		printf("OctoShell: Failed to load enviroment variables.\n");
 		return NULL;
-	}
+	}*/
+
+
+
+
 	//seperate into tokens and 
 
 
@@ -615,6 +558,19 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 	}
 	else if (!tok) return FALSE;
 	
+	//**********
+	strcpy(command_str,(command_str_copy + (tok - command_str)));
+	char* new_command_string_buffer = PlaceEnvVars(command_str, envVars);
+	snprintf(command_str, COMMAND_MAX_SIZE, "%s", new_command_string_buffer);
+	free(new_command_string_buffer);
+
+	if (command_str == NULL) {
+		printf("OctoShell: Failed to load enviroment variables.\n");
+		return NULL;
+	}
+
+	tok = strtokCommand(command_str, sep);
+	//******************
 	cmd = tok;
 
 	int name_length = (strlen(tok) + 1); // +5 for adding .exe
@@ -921,6 +877,7 @@ DirectoryNode* start_path;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
 EnvVar* envVars;
+AliasVar* aliasVars;
 char command_str[COMMAND_MAX_SIZE];
 char* function_bin;  
 //char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Debug\\bin\\";

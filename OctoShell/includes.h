@@ -18,6 +18,7 @@
 #include "DirectoryFunc.h"
 #include "Proccess.h"
 #include "stringFuncs.h"
+#include "environment.h"
 
 #include "TypesDef.h"
 
