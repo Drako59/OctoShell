@@ -15,3 +15,6 @@ char* PlaceAliases(char* arg_par, AliasVar* aliases);
 void FreeAliasVars(AliasVar* envVars);
 BOOL Alias(Command* command);
 BOOL UnAlias(Command* command);
+BOOL UnSet(Command* command);
+BOOL AddEnvVar(char* name, char* value, EnvVar* envVars);
+BOOL UpdateEnvVar(char* name, char* value, EnvVar* envVars);

@@ -799,52 +799,13 @@ BOOL LoadWindowsEnvVars(EnvVar* varList) {
 	return TRUE;
 }
 
-//Add a new var but don't create a copy a the text but put the pointers as the value so be carefull when use.
-BOOL AddEnvVar(char* name, char* value, EnvVar* envVars) {
-	static EnvVar* last_var = NULL;
-	if (last_var == NULL)
-	{
-		last_var = envVars;
-		while (last_var->nextVar != NULL)
-			last_var = last_var->nextVar;
 
-		
-
-		
-	}
-
-	last_var->nextVar = (EnvVar*)calloc(1, sizeof(EnvVar));
-	if (last_var->nextVar == NULL) return FALSE;
-
-	last_var = last_var->nextVar;
-	last_var->name = name;
-	last_var->value = value;
-	return TRUE;
-	
-}
-
-BOOL UpdateEnvVar(char* name, char* value, EnvVar* envVars) {
-	EnvVar* current_var = envVars;
-	
-
-	while (current_var != NULL) {
-		if (strcmp(current_var->name, name) == 0)
-		{
-			free(current_var->value);
-			current_var->value = value;
-			return TRUE;
-		}
-		current_var = current_var->nextVar;
-	}
-	return FALSE;
-
-}
 
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
-BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear ,printLastEnvVar , Alias,UnAlias};
-char* funcs_name[] = { "cd","pwd", "echo","clear", "last","alias","unalias"};
-char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR", "LAST","ALIAS","UNALIAS"};
+BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear ,printLastEnvVar , Alias,UnAlias,UnSet};
+char* funcs_name[] = { "cd","pwd", "echo","clear", "last","alias","unalias","unset"};
+char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR", "LAST","ALIAS","UNALIAS","UNSET"};
 DirectoryNode* start_path;
 DirectoryNode* path_pointer;
 DirectoryNode* before;

@@ -3,6 +3,8 @@
 //GLOBAL ALIASES and VARS chains
 EnvVar* envVars;
 AliasVar* aliasVars;
+static AliasVar* last_alias = NULL;
+static EnvVar* last_var = NULL;
 //*********************
 
 bool IsValidAliasName(const char* name)
@@ -21,20 +23,20 @@ bool IsValidAliasName(const char* name)
 }
 
 BOOL AddAliases(char* name, char* value) {
-	static AliasVar* last_var = NULL;
-	if (last_var == NULL)
+	
+	if (last_alias == NULL)
 	{
-		last_var = aliasVars;
-		while (last_var->nextVar != NULL)
-			last_var = last_var->nextVar;
+		last_alias = aliasVars;
+		while (last_alias->nextVar != NULL)
+			last_alias = last_alias->nextVar;
 	}
 
-	last_var->nextVar = (AliasVar*)calloc(1, sizeof(AliasVar));
-	if (last_var->nextVar == NULL) return FALSE;
+	last_alias->nextVar = (AliasVar*)calloc(1, sizeof(AliasVar));
+	if (last_alias->nextVar == NULL) return FALSE;
 
-	last_var = last_var->nextVar;
-	last_var->name = name;
-	last_var->value = value;
+	last_alias = last_alias->nextVar;
+	last_alias->name = name;
+	last_alias->value = value;
 	return TRUE;
 
 }
@@ -110,9 +112,10 @@ void freeAlias(AliasVar* alias) {
 
 BOOL UnAlias(Command* command) {
 	
-	if (command->argc == 1 && (strcmp(command->argv[0], "-a") || strcmp(command->argv[0], "-A"))) {
+	if (command->argc == 1 && (strcmp(command->argv[0], "-a") == 0 || strcmp(command->argv[0], "-A") == 0)) {
 		FreeAliasVars(aliasVars->nextVar);
 		aliasVars->nextVar = NULL;
+		last_alias = aliasVars;
 		return TRUE;
 	}
 
@@ -121,22 +124,25 @@ BOOL UnAlias(Command* command) {
 
 		if (IsValidAliasName(name)) {
 
-			AliasVar* pAlias = aliasVars;
-			AliasVar* lastAlias = NULL;
+			AliasVar* pAlias = aliasVars->nextVar;
+			AliasVar* lastAlias = aliasVars;
 
 			while (pAlias != NULL) {
 				if (strcmp(name, pAlias->name) == 0) {
-					if (lastAlias == NULL) {
+					/*if (lastAlias == NULL) {
 						lastAlias = aliasVars;
 						aliasVars = aliasVars->nextVar;
+
 						freeAlias(lastAlias);
 						return TRUE;
-					}
-					else {
-						lastAlias = pAlias->nextVar;
-						freeAlias(pAlias);
-						return TRUE;
-					}
+					}*/
+					//else {
+					if(pAlias->nextVar == NULL)
+						last_alias = lastAlias;
+					lastAlias->nextVar = pAlias->nextVar;
+					freeAlias(pAlias);
+					return TRUE;
+					//}
 				}
 				lastAlias = pAlias;
 				pAlias = pAlias->nextVar;
@@ -241,6 +247,7 @@ char* PlaceAliases(char* arg_par, AliasVar* aliases) {
 }
 
 
+
 void FreeAliasVars(AliasVar* envVars) {
 	AliasVar* current;
 	while (envVars != NULL) {
@@ -250,5 +257,99 @@ void FreeAliasVars(AliasVar* envVars) {
 		envVars = envVars->nextVar;
 		free(current);
 	}
+
+}
+
+
+BOOL UnSet(Command* command) {
+
+	if (command->argc == 1 && (strcmp(command->argv[0], "-a") == 0 || strcmp(command->argv[0], "-A") == 0)) {
+		FreeAliasVars(envVars->nextVar);
+		envVars->nextVar = NULL;
+		last_var = envVars;
+		return TRUE;
+	}
+
+	for (int i = 0; i < command->argc; i++) {
+		char* name = command->argv[i];
+
+		if (IsValidAliasName(name)) {
+
+			EnvVar* pVar = envVars->nextVar;
+			EnvVar* lastVar = NULL;
+
+			while (pVar != NULL) {
+				if (strcmp(name, pVar->name) == 0) {
+					/*if (lastVar == NULL) {
+						lastVar = envVars;
+						envVars = envVars->nextVar;
+						freeAlias(lastVar);
+						return TRUE;
+					}*/
+					//else {
+					if (pVar->nextVar == NULL)
+						last_var = lastVar;
+					lastVar->nextVar = pVar->nextVar;
+
+					freeAlias(pVar);
+					return TRUE;
+					//}
+				}
+				lastVar = pVar;
+				pVar = pVar->nextVar;
+			}
+		}
+		else {
+			fputs("UnAlias: Invalid alias name \"", stderr);
+			fputs(name, stderr);
+			fputs("\" was passed.\n", stderr);
+			return FALSE;
+		}
+	}
+
+	return FALSE;
+
+}
+
+
+
+//Add a new var but don't create a copy a the text but put the pointers as the value so be carefull when use.
+BOOL AddEnvVar(char* name, char* value, EnvVar* envVars) {
+	
+	if (last_var == NULL)
+	{
+		last_var = envVars;
+		while (last_var->nextVar != NULL)
+			last_var = last_var->nextVar;
+
+
+
+
+	}
+
+	last_var->nextVar = (EnvVar*)calloc(1, sizeof(EnvVar));
+	if (last_var->nextVar == NULL) return FALSE;
+
+	last_var = last_var->nextVar;
+	last_var->name = name;
+	last_var->value = value;
+	return TRUE;
+
+}
+
+BOOL UpdateEnvVar(char* name, char* value, EnvVar* envVars) {
+	EnvVar* current_var = envVars;
+
+
+	while (current_var != NULL) {
+		if (strcmp(current_var->name, name) == 0)
+		{
+			free(current_var->value);
+			current_var->value = value;
+			return TRUE;
+		}
+		current_var = current_var->nextVar;
+	}
+	return FALSE;
 
 }
