@@ -86,11 +86,7 @@ void printLastEnvVar(Command* command);
 
 
 //
-//Alocation error
-void printAllocationError(void) {
-	printf("OctoShell: There is no available space in heap. try to upgrade your pc maybe?(pls?) :(\n");
 
-}
 
 void FreeCommand(Command* cmd_pointer) {
 	Command* current;
@@ -445,39 +441,10 @@ BOOL CheckVarName(char* name) {
 	return TRUE;
 }
 
-//take the original text and remove the quotes
-BOOL RemoveQuotes(char* text) {
-	int len = strlen(text);
-	int p = 0;
-	BOOL InsideQuotes = FALSE;
-	BOOL InsideDoubleQuotes = FALSE;
-	BOOL removed = FALSE;
-	for (int i = 0; i  < len + 1; i++) {
-		if(text[i] == '"' && !InsideDoubleQuotes && !InsideQuotes) {
-			InsideDoubleQuotes = TRUE;
-			removed = TRUE;
-		}
-		else if (text[i] == '\'' && !InsideDoubleQuotes && !InsideQuotes) {
-			InsideQuotes = TRUE;
-			removed = TRUE;
-		}
-		else if (text[i] == '"' && InsideDoubleQuotes) {
-			InsideDoubleQuotes = TRUE;
-		}
-		else if (text[i] == '\'' && InsideQuotes) {
-			InsideQuotes = TRUE;
-		}
-		else {
-			text[p] = text[i];
-			p++;
-		}
-	}
-	return removed;
-	//text[p] = '\0';
-}
 
 
-Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { //to choose if return a command obj or to pass one
+
+Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars, AliasVar* aliasVars) { //to choose if return a command obj or to pass one
 	
 	char command_str_copy[COMMAND_MAX_SIZE];
 	snprintf(command_str_copy, COMMAND_MAX_SIZE, "%s", command_str);
@@ -560,7 +527,12 @@ Command* SepIntoCommand(char* command_str, Command* command, EnvVar* envVars) { 
 	
 	//**********
 	strcpy(command_str,(command_str_copy + (tok - command_str)));
-	char* new_command_string_buffer = PlaceEnvVars(command_str, envVars);
+
+	char* new_command_string_buffer = PlaceAliases(command_str, aliasVars);
+	snprintf(command_str, COMMAND_MAX_SIZE, "%s", new_command_string_buffer);
+	free(new_command_string_buffer);
+
+	new_command_string_buffer = PlaceEnvVars(command_str, envVars);
 	snprintf(command_str, COMMAND_MAX_SIZE, "%s", new_command_string_buffer);
 	free(new_command_string_buffer);
 
@@ -870,14 +842,13 @@ BOOL UpdateEnvVar(char* name, char* value, EnvVar* envVars) {
 
 //GLOBAL VARIBALS-----------------------------------------------------------------------------------------------------------------------
 
-BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear ,printLastEnvVar };
-char* funcs_name[] = { "cd","pwd", "echo","clear", "last"};
-char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR", "LAST"};
+BOOL(*func_arr[])(Command*) = { cd, pwd, echo,clear ,printLastEnvVar , Alias,UnAlias};
+char* funcs_name[] = { "cd","pwd", "echo","clear", "last","alias","unalias"};
+char* funcs_name_cap[] = { "CD", "PWD","ECHO","CLEAR", "LAST","ALIAS","UNALIAS"};
 DirectoryNode* start_path;
 DirectoryNode* path_pointer;
 DirectoryNode* before;
-EnvVar* envVars;
-AliasVar* aliasVars;
+
 char command_str[COMMAND_MAX_SIZE];
 char* function_bin;  
 //char* function_bin = "C:\\Users\\ayele\\source\\repos\\Drako59\\OctoShell\\x64\\Debug\\bin\\";
@@ -955,6 +926,20 @@ int main()
 	}
 	envVars->value = OctoShellVarValue;
 	LoadWindowsEnvVars(envVars); 
+
+	//Start the alises chain******************************
+	aliasVars = (AliasVar*)calloc(1, sizeof(AliasVar));
+	if (aliasVars == NULL) {
+		printAllocationError();
+		return 1;
+	}
+
+	aliasVars->name = _strdup("ll");
+	aliasVars->value = _strdup("ls -l");
+
+
+	//****************************************************
+
 	/*printEnvVars(envVars);
 
 	char* test = "test/test/   $OctoShell";
@@ -1035,7 +1020,7 @@ int main()
 			break;
 
 		//LOAD THE COMMAND STURCTURE BY THE COMMAND LINE THAT WAS PASED USING fgets()
-		if (SepIntoCommand(command_str, &command, envVars) == NULL) {
+		if (SepIntoCommand(command_str, &command, envVars , aliasVars) == NULL) {
 			printf("Invalid Command\n");
 			printf(ESC "[94m%s:~" ESC_FORGROUND_END "$ " ESC "[38;2;248;248;242m", path);
 			ExitFree(&command);
@@ -1146,7 +1131,7 @@ int main()
 	}
 
 	
-
+	FreeAliasVars(aliasVars);
 	FreeEnvVars(envVars);
 	freePathNode(start_path);
 	EndThemeColors();

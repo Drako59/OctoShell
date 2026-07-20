@@ -1,6 +1,36 @@
 //Sperate function by " " which inspierd from strtok. but build for shell's commands
 #include "includes.h"
 
+//take the original text and remove the quotes
+BOOL RemoveQuotes(char* text) {
+	int len = strlen(text);
+	int p = 0;
+	BOOL InsideQuotes = FALSE;
+	BOOL InsideDoubleQuotes = FALSE;
+	BOOL removed = FALSE;
+	for (int i = 0; i < len + 1; i++) {
+		if (text[i] == '"' && !InsideDoubleQuotes && !InsideQuotes) {
+			InsideDoubleQuotes = TRUE;
+			removed = TRUE;
+		}
+		else if (text[i] == '\'' && !InsideDoubleQuotes && !InsideQuotes) {
+			InsideQuotes = TRUE;
+			removed = TRUE;
+		}
+		else if (text[i] == '"' && InsideDoubleQuotes) {
+			InsideDoubleQuotes = TRUE;
+		}
+		else if (text[i] == '\'' && InsideQuotes) {
+			InsideQuotes = TRUE;
+		}
+		else {
+			text[p] = text[i];
+			p++;
+		}
+	}
+	return removed;
+	//text[p] = '\0';
+}
 
 char* strtokCommand(char* command_str, const char* sep) {
 

@@ -126,6 +126,7 @@
   <ItemGroup>
     <ClCompile Include="DirectoryFunc.c" />
     <ClCompile Include="environment.c" />
+    <ClCompile Include="ErrorsFunctions.c" />
     <ClCompile Include="OctoShell.c" />
     <ClCompile Include="Parser.c" />
     <ClCompile Include="Proccess.c" />
@@ -135,12 +136,10 @@
     <ClInclude Include="basicImports.h" />
     <ClInclude Include="DirectoryFunc.h" />
     <ClInclude Include="environment.h" />
+    <ClInclude Include="ErrorsFunctions.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Proccess.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
-    <ClInclude Include="resource2.h" />
     <ClInclude Include="stringFuncs.h" />
     <ClInclude Include="TypesDef.h" />
   </ItemGroup>

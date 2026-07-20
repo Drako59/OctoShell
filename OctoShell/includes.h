@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <Windows.h>
 #include <shlwapi.h>
 //#include <winsock2.h>
@@ -19,7 +20,7 @@
 #include "Proccess.h"
 #include "stringFuncs.h"
 #include "environment.h"
-
+#include "ErrorsFunctions.h"
 #include "TypesDef.h"
 
 #pragma comment(lib, "shlwapi.lib")
