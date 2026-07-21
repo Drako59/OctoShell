@@ -1,29 +1,29 @@
 # OctoShell 🐙
 
-OctoShell is an educational Windows command-line shell written in C with the WinAPI.
+OctoShell is a custom Windows command-line shell written in C with the WinAPI.
 
-The project explores how shells parse input, manage shell state, connect processes through pipes, redirect standard streams, expand variables and aliases, resolve commands, and launch child processes with `CreateProcessW`.
+The project was created to explore low-level operating-system concepts such as command parsing, process creation, pipes, standard-stream redirection, environment variables, aliases, Unicode handling, file-system APIs, and networking APIs.
 
-> OctoShell is still under active development. It is a low-level learning project rather than a production replacement for CMD, PowerShell, or Bash.
+> OctoShell is an educational project that is still under active development.
 
 ---
 
-## Current Features
+## Features
 
-### Shell core
+### Shell Core
 
 - Custom command tokenizer and parser written in C
-- Single-quoted and double-quoted arguments
+- Support for single-quoted and double-quoted arguments
 - Multiple commands connected through pipelines
-- Output redirection with `>`
-- External process creation with `CreateProcessW`
-- Standard input/output handle inheritance with `STARTUPINFO`
-- Waiting for all processes in a pipeline with `WaitForMultipleObjects`
+- Output redirection using `>`
+- External process execution using `CreateProcessW`
+- Standard handle configuration through `STARTUPINFO`
+- Pipeline synchronization using `WaitForMultipleObjects`
 - UTF-8 and UTF-16 conversion helpers for Windows APIs
 - ANSI-colored prompt and OctoShell startup banner
-- Custom executables loaded from a `bin` directory next to `OctoShell.exe`
+- Custom command executables loaded from a `bin` directory next to `OctoShell.exe`
 
-### Built-in commands
+### Built-in Commands
 
 - `cd`
 - `pwd`
@@ -33,11 +33,9 @@ The project explores how shells parse input, manage shell state, connect process
 - `unalias`
 - `unset`
 
-A small internal `last` command also exists for debugging environment variables.
+### Environment Variables
 
-### Variables
-
-OctoShell loads the Windows environment block with `GetEnvironmentStringsW` and stores the variables in its own linked list.
+OctoShell loads the Windows environment block using `GetEnvironmentStringsW` and stores the variables in its own linked list.
 
 It also supports shell-local assignments and `$VAR` expansion:
 
@@ -47,7 +45,7 @@ echo $name
 unset name
 ```
 
-Assignments can appear before a command:
+Assignments can also appear before a command:
 
 ```shell
 name=OctoShell echo $name
@@ -69,35 +67,34 @@ All aliases can be removed with:
 unalias -a
 ```
 
-Alias expansion is applied to the first word of each command inside a pipeline.
+Alias expansion is applied to the first word of each command in a pipeline.
 
 ### Pipelines
 
-The parser stores commands as a linked list. For every `|`, OctoShell creates an anonymous pipe and connects one process's standard output to the next process's standard input.
+Commands are stored as a linked list of `Command` structures. When the parser encounters `|`, OctoShell creates an anonymous pipe and connects the standard output of one process to the standard input of the next process.
 
 ```shell
 ls | cat
 ```
 
-The design supports pipelines with more than two commands.
+The design supports pipelines containing multiple commands.
 
 ---
 
-## Included Command Projects
+## Included Commands
 
-OctoShell contains several standalone command executables. These are separate programs rather than wrappers around the Windows commands.
+OctoShell contains several standalone command executables implemented as separate C projects.
 
-| Command | Current implementation |
+| Command | Description |
 |---|---|
-| `ls` | Directory listing with basic path support, `-a`, and an experimental `-l` view |
-| `cat` | Reads one or more files and can copy piped standard input to standard output |
+| `ls` | Lists directory contents with path support, `-a`, and basic `-l` output |
+| `cat` | Reads one or more files and can copy standard input to standard output |
 | `cp` | Copies a file to another file or into a directory |
-| `ping` | IPv4 ICMP echo requests, DNS resolution, configurable count with `-n`, timeout handling, and average RTT |
-| `nslookup` | DNS A-record lookups and IPv4 reverse PTR lookups |
+| `ping` | Sends IPv4 ICMP echo requests with DNS resolution, configurable request count, timeout handling, and average RTT |
+| `nslookup` | Performs DNS A-record lookups and IPv4 reverse PTR lookups |
 | `grep` | Searches text files by line and binary files by byte pattern |
-| `http` | Planned command; the project currently contains only a placeholder |
 
-`ping`, `nslookup`, and `grep` use the shared `CommandFuncs` static library for common argument parsing and string utilities.
+The `ping`, `nslookup`, and `grep` projects use the shared `CommandFuncs` static library for common argument parsing and utility functions.
 
 ---
 
@@ -110,13 +107,13 @@ Process leading variable assignments
        ↓
 Expand aliases
        ↓
-Expand $VARIABLE references
+Expand environment-variable references
        ↓
 Parse commands, arguments, pipes, and redirection
        ↓
-Run built-in commands inside the shell
+Execute built-in commands inside the shell
        ↓
-Try OctoShell's bin directory
+Search the OctoShell bin directory
        ↓
 Launch external commands with CreateProcessW
        ↓
@@ -141,7 +138,7 @@ typedef struct Command {
 } Command;
 ```
 
-Each node represents one command. The `next` pointer connects commands in a pipeline.
+Each `Command` node represents one command. The `next` pointer connects commands inside a pipeline.
 
 ---
 
@@ -150,22 +147,22 @@ Each node represents one command. The `next` pointer connects commands in a pipe
 ```text
 OctoShell/
 ├── OctoShell/
-│   ├── OctoShell.c        # Main loop, parsing flow, built-in dispatch, and command resolution
+│   ├── OctoShell.c        # Main loop, parsing flow, built-in dispatch, and command execution
 │   ├── Parser.c           # Quote-aware tokenization helpers
 │   ├── environment.c      # Variables, aliases, unset, and unalias
-│   ├── Proccess.c         # CreateProcessW and process resource management
+│   ├── Proccess.c         # Process creation and process resource management
 │   ├── DirectoryFunc.c    # cd, pwd, clear, and directory state
 │   ├── stringFuncs.c      # String helpers
 │   ├── TypesDef.h         # Shared shell structures
 │   └── ...
 ├── CommandFuncs/          # Shared static library for command utilities
-├── Cat/                   # cat executable
-├── cp/                    # cp executable
-├── ls/                    # ls executable
-├── ping/                  # IPv4 ICMP ping executable
-├── nslookup/              # DNS A/PTR lookup executable
-├── grep/                  # Text and byte-pattern search executable
-├── http/                  # Planned HTTP command placeholder
+├── Cat/                   # cat command
+├── cp/                    # cp command
+├── ls/                    # ls command
+├── ping/                  # IPv4 ICMP ping command
+├── nslookup/              # DNS A/PTR lookup command
+├── grep/                  # Text and byte-pattern search command
+├── http/                  # HTTP command project
 └── OctoShell.sln
 ```
 
@@ -220,7 +217,7 @@ git clone https://github.com/Drako59/OctoShell.git
 ```
 
 2. Open `OctoShell.sln` in Visual Studio.
-3. Select an x64 configuration.
+3. Select an x64 build configuration.
 4. Build the solution.
 5. Place the custom command executables inside a `bin` directory next to `OctoShell.exe`.
 
@@ -234,40 +231,6 @@ bin/
 ├── nslookup.exe
 └── grep.exe
 ```
-
-> Some Visual Studio project settings still contain machine-specific include or library paths. These settings are being replaced with relative solution paths to make clean clones portable.
-
----
-
-## Current Limitations
-
-- Input redirection with `<` is not active yet.
-- `Ctrl+C` is not yet forwarded cleanly to the currently running child process.
-- Aliases and shell-local variables exist only for the current session.
-- Alias expansion currently performs one expansion pass rather than full recursive expansion.
-- Variable expansion does not yet reproduce every Bash quoting rule.
-- Explicit PATH resolution is still being improved; part of the search is delegated to Windows process creation.
-- `.cmd`, `.bat`, `.com`, and `.ps1` extension attempts are experimental. Script files are not yet launched through their correct interpreter in every case.
-- `ls -l` is an early implementation and does not yet provide complete Windows permission and ownership information.
-- `grep` currently searches files and does not yet behave like Unix `grep` when receiving only piped standard input.
-- The `http` project is currently a placeholder.
-- Error handling, resource ownership, and memory cleanup are still being hardened.
-- Automated tests have not yet been added.
-
----
-
-## Near-Term Roadmap
-
-1. Fix remaining undefined behavior, missing return values, and type issues.
-2. Remove hard-coded development paths and machine-specific Visual Studio paths.
-3. Harden process, pipe, file-handle, and allocation cleanup.
-4. Complete input redirection with `<`.
-5. Store child exit codes and support `$?`.
-6. Add clean `Ctrl+C` handling with Windows console control APIs.
-7. Improve command resolution and script-interpreter launching.
-8. Add parser, alias, variable-expansion, and pipeline tests.
-9. Add persistent configuration through an OctoShell startup file.
-10. Later add history, tab completion, `>>`, stderr redirection, `&&`, `||`, and `;`.
 
 ---
 
