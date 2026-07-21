@@ -2,9 +2,9 @@
 
 OctoShell is a custom Windows command-line shell written in C with the WinAPI.
 
-The project was created to explore low-level operating-system concepts such as command parsing, process creation, pipes, standard-stream redirection, environment variables, aliases, Unicode handling, file-system APIs, and networking APIs.
+The project explores low-level operating-system concepts such as command parsing, process creation, pipes, standard-stream redirection, environment variables, aliases, Unicode handling, file-system APIs, and networking APIs.
 
-> OctoShell is an educational project that is still under active development.
+> OctoShell is an educational project focused on Windows internals and systems programming.
 
 ---
 
@@ -162,7 +162,6 @@ OctoShell/
 ├── ping/                  # IPv4 ICMP ping command
 ├── nslookup/              # DNS A/PTR lookup command
 ├── grep/                  # Text and byte-pattern search command
-├── http/                  # HTTP command project
 └── OctoShell.sln
 ```
 
